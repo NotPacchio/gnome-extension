@@ -43,7 +43,9 @@ export default GObject.registerClass(class MemoryHeader extends Header {
         const menu = new MemoryMenu(this, 0.5, MenuBase.arrowAlignement);
         this.setMenu(menu);
         Config.connect(this, 'changed::memory-indicators-order', this.addOrReorderIndicators.bind(this));
-        Config.bind('memory-header-show', this, 'visible', Gio.SettingsBindFlags.GET);
+    }
+    get showConfig() {
+        return 'memory-header-show';
     }
     addOrReorderIndicators() {
         const indicators = Utils.getIndicatorsOrder('memory');
@@ -82,17 +84,17 @@ export default GObject.registerClass(class MemoryHeader extends Header {
         let iconSize = Config.get_int('storage-header-icon-size');
         iconSize = Math.max(8, Math.min(30, iconSize));
         this.icon = new St.Icon({
-            fallback_gicon: Utils.getLocalIcon('am-memory-symbolic'),
+            fallbackGicon: Utils.getLocalIcon('am-memory-symbolic'),
             style: defaultStyle,
-            icon_size: iconSize,
-            y_expand: false,
-            y_align: Clutter.ActorAlign.CENTER,
-            x_align: Clutter.ActorAlign.CENTER,
+            iconSize: iconSize,
+            yExpand: false,
+            yAlign: Clutter.ActorAlign.CENTER,
+            xAlign: Clutter.ActorAlign.CENTER,
         });
         const setIconName = () => {
             const iconCustom = Config.get_string('memory-header-icon-custom');
             if (iconCustom)
-                this.icon.icon_name = iconCustom;
+                this.icon.iconName = iconCustom;
             else
                 this.icon.gicon = Utils.getLocalIcon('am-memory-symbolic');
         };
@@ -189,15 +191,18 @@ export default GObject.registerClass(class MemoryHeader extends Header {
             breakdownConfig: 'memory-header-bars-breakdown',
         });
         Config.bind('memory-header-bars', this.bars, 'visible', Gio.SettingsBindFlags.GET);
-        Utils.memoryMonitor.listen(this.bars, 'memoryUsage', () => {
-            if (!Config.get_boolean('memory-header-bars'))
-                return;
-            const usage = Utils.memoryMonitor.getCurrentValue('memoryUsage');
-            if (!usage || !usage.total || isNaN(usage.total))
-                this.bars.setUsage([]);
-            else
-                this.bars.setUsage([usage]);
-        });
+        Utils.memoryMonitor.listen(this.bars, 'memoryUsage', this.updateBars.bind(this));
+    }
+    updateBars() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('memory-header-bars'))
+            return;
+        const usage = Utils.memoryMonitor.getCurrentValue('memoryUsage');
+        if (!usage || !usage.total || isNaN(usage.total))
+            this.bars.setUsage([]);
+        else
+            this.bars.setUsage([usage]);
     }
     buildGraph() {
         if (this.graph) {
@@ -221,85 +226,99 @@ export default GObject.registerClass(class MemoryHeader extends Header {
             graphWidth = Math.max(10, Math.min(500, graphWidth));
             this.graph.setWidth(graphWidth);
         });
-        Utils.memoryMonitor.listen(this.graph, 'memoryUsage', () => {
-            if (!Config.get_boolean('memory-header-graph'))
-                return;
-            const usage = Utils.memoryMonitor.getUsageHistory('memoryUsage');
-            this.graph.setUsageHistory(usage);
-        });
+        Utils.memoryMonitor.listen(this.graph, 'memoryUsage', this.updateGraph.bind(this));
+    }
+    updateGraph() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('memory-header-graph'))
+            return;
+        const usage = Utils.memoryMonitor.getUsageHistory('memoryUsage');
+        this.graph.setUsageHistory(usage);
     }
     buildPercentage() {
         this.percentage = new St.Label({
             text: Utils.zeroStr + '%',
-            style_class: 'astra-monitor-header-percentage3',
-            y_align: Clutter.ActorAlign.CENTER,
+            styleClass: 'astra-monitor-header-percentage3',
+            yAlign: Clutter.ActorAlign.CENTER,
         });
         Config.bind('memory-header-percentage', this.percentage, 'visible', Gio.SettingsBindFlags.GET);
-        Utils.memoryMonitor.listen(this.percentage, 'memoryUsage', () => {
-            if (!Config.get_boolean('memory-header-percentage'))
-                return;
-            const usage = Utils.memoryMonitor.getCurrentValue('memoryUsage');
-            if (!usage ||
-                !usage.total ||
-                isNaN(usage.total) ||
-                !usage.used ||
-                isNaN(usage.used))
-                this.percentage.text = '';
-            else
-                this.percentage.text = `${Math.round((usage.used / usage.total) * 100)}%`;
-        });
+        Utils.memoryMonitor.listen(this.percentage, 'memoryUsage', this.updatePercentage.bind(this));
+    }
+    updatePercentage() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('memory-header-percentage'))
+            return;
+        const usage = Utils.memoryMonitor.getCurrentValue('memoryUsage');
+        if (!usage || !usage.total || isNaN(usage.total) || !usage.used || isNaN(usage.used))
+            this.percentage.text = '';
+        else
+            this.percentage.text = `${Math.round((usage.used / usage.total) * 100)}%`;
     }
     buildValue() {
         this.value = new St.Label({
             text: '-',
-            style_class: 'astra-monitor-header-value',
-            y_align: Clutter.ActorAlign.CENTER,
+            styleClass: 'astra-monitor-header-value',
+            yAlign: Clutter.ActorAlign.CENTER,
         });
         Config.bind('memory-header-value', this.value, 'visible', Gio.SettingsBindFlags.GET);
-        Utils.memoryMonitor.listen(this.value, 'memoryUsage', () => {
-            if (!Config.get_boolean('memory-header-value'))
-                return;
-            const unit = Config.get_string('memory-unit');
-            const figures = Config.get_int('memory-header-value-figures');
-            const usage = Utils.memoryMonitor.getCurrentValue('memoryUsage');
-            if (!usage || !usage.used || isNaN(usage.used))
-                this.value.text = '-';
-            else
-                this.value.text = `${Utils.formatBytes(usage.used, unit, figures)}`;
-        });
+        Utils.memoryMonitor.listen(this.value, 'memoryUsage', this.updateValue.bind(this));
+    }
+    updateValue() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('memory-header-value'))
+            return;
+        const unit = Config.get_string('memory-unit');
+        const figures = Config.get_int('memory-header-value-figures');
+        const usage = Utils.memoryMonitor.getCurrentValue('memoryUsage');
+        if (!usage || !usage.used || isNaN(usage.used))
+            this.value.text = '-';
+        else
+            this.value.text = `${Utils.formatBytes(usage.used, unit, figures)}`;
     }
     buildFree() {
         this.free = new St.Label({
             text: '-',
-            style_class: 'astra-monitor-header-value',
-            y_align: Clutter.ActorAlign.CENTER,
+            styleClass: 'astra-monitor-header-value',
+            yAlign: Clutter.ActorAlign.CENTER,
         });
         Config.bind('memory-header-free', this.free, 'visible', Gio.SettingsBindFlags.GET);
-        Utils.memoryMonitor.listen(this.free, 'memoryUsage', () => {
-            if (!Config.get_boolean('memory-header-free'))
-                return;
-            const unit = Config.get_string('memory-unit');
-            const figures = Config.get_int('memory-header-free-figures');
-            const usage = Utils.memoryMonitor.getCurrentValue('memoryUsage');
-            if (!usage || !usage.used || isNaN(usage.used))
-                this.free.text = '-';
-            else
-                this.free.text = `${Utils.formatBytes(usage.free, unit, figures)}`;
-        });
+        Utils.memoryMonitor.listen(this.free, 'memoryUsage', this.updateFree.bind(this));
     }
-    update() { }
+    updateFree() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('memory-header-free'))
+            return;
+        const unit = Config.get_string('memory-unit');
+        const figures = Config.get_int('memory-header-free-figures');
+        const usage = Utils.memoryMonitor.getCurrentValue('memoryUsage');
+        if (!usage || !usage.used || isNaN(usage.used))
+            this.free.text = '-';
+        else
+            this.free.text = `${Utils.formatBytes(usage.free, unit, figures)}`;
+    }
+    update() {
+        this.updateBars();
+        this.updateGraph();
+        this.updatePercentage();
+        this.updateValue();
+        this.updateFree();
+    }
     createTooltip() {
         this.tooltipMenu = new PopupMenu.PopupMenu(this, 0.5, MenuBase.arrowAlignement);
         Main.uiGroup.add_child(this.tooltipMenu.actor);
         this.tooltipMenu.actor.add_style_class_name('astra-monitor-tooltip-menu');
-        this.tooltipMenu.actor.x_expand = true;
+        this.tooltipMenu.actor.xExpand = true;
         this.tooltipMenu.actor.hide();
         this.tooltipItem = new PopupMenu.PopupMenuItem('', {
             reactive: true,
             style_class: 'astra-monitor-tooltip-item',
         });
-        this.tooltipItem.actor.x_expand = true;
-        this.tooltipItem.actor.x_align = Clutter.ActorAlign.CENTER;
+        this.tooltipItem.actor.xExpand = true;
+        this.tooltipItem.actor.xAlign = Clutter.ActorAlign.CENTER;
         this.tooltipItem.sensitive = true;
         this.tooltipMenu.addMenuItem(this.tooltipItem);
         Config.connect(this.tooltipMenu, 'changed::memory-header-tooltip', () => {

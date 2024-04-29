@@ -41,8 +41,10 @@ export default GObject.registerClass(class ProcessorHeader extends Header {
         const menu = new ProcessorMenu(this, 0.5, MenuBase.arrowAlignement);
         this.setMenu(menu);
         Config.connect(this, 'changed::processor-indicators-order', this.addOrReorderIndicators.bind(this));
-        Config.bind('processor-header-show', this, 'visible', Gio.SettingsBindFlags.GET);
         Config.connect(this, 'changed::processor-header-bars-core', this.rebuildBars.bind(this));
+    }
+    get showConfig() {
+        return 'processor-header-show';
     }
     addOrReorderIndicators() {
         const indicators = Utils.getIndicatorsOrder('processor');
@@ -75,17 +77,17 @@ export default GObject.registerClass(class ProcessorHeader extends Header {
         let iconSize = Config.get_int('storage-header-icon-size');
         iconSize = Math.max(8, Math.min(30, iconSize));
         this.icon = new St.Icon({
-            fallback_gicon: Utils.getLocalIcon('am-cpu-symbolic'),
+            fallbackGicon: Utils.getLocalIcon('am-cpu-symbolic'),
             style: defaultStyle,
-            icon_size: iconSize,
-            y_expand: false,
-            y_align: Clutter.ActorAlign.CENTER,
-            x_align: Clutter.ActorAlign.CENTER,
+            iconSize: iconSize,
+            yExpand: false,
+            yAlign: Clutter.ActorAlign.CENTER,
+            xAlign: Clutter.ActorAlign.CENTER,
         });
         const setIconName = () => {
             const iconCustom = Config.get_string('processor-header-icon-custom');
             if (iconCustom)
-                this.icon.icon_name = iconCustom;
+                this.icon.iconName = iconCustom;
             else
                 this.icon.gicon = Utils.getLocalIcon('am-cpu-symbolic');
         };
@@ -169,28 +171,34 @@ export default GObject.registerClass(class ProcessorHeader extends Header {
         });
         Config.bind('processor-header-bars', this.bars, 'visible', Gio.SettingsBindFlags.GET);
         if (perCoreBars) {
-            Utils.processorMonitor.listen(this.bars, 'cpuCoresUsage', () => {
-                if (!Config.get_boolean('processor-header-bars'))
-                    return;
-                const usage = Utils.processorMonitor.getCurrentValue('cpuCoresUsage');
-                const cores = Utils.processorMonitor.getNumberOfCores();
-                if (!usage || !Array.isArray(usage) || usage.length < cores)
-                    this.bars.setUsage([]);
-                else
-                    this.bars.setUsage(usage);
-            });
+            Utils.processorMonitor.listen(this.bars, 'cpuCoresUsage', this.updateBarsCores.bind(this));
         }
         else {
-            Utils.processorMonitor.listen(this.bars, 'cpuUsage', () => {
-                if (!Config.get_boolean('processor-header-bars'))
-                    return;
-                const usage = Utils.processorMonitor.getCurrentValue('cpuUsage');
-                if (!usage || !usage.total || isNaN(usage.total))
-                    this.bars.setUsage([]);
-                else
-                    this.bars.setUsage([usage]);
-            });
+            Utils.processorMonitor.listen(this.bars, 'cpuUsage', this.updateBars.bind(this));
         }
+    }
+    updateBarsCores() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('processor-header-bars'))
+            return;
+        const usage = Utils.processorMonitor.getCurrentValue('cpuCoresUsage');
+        const cores = Utils.processorMonitor.getNumberOfCores();
+        if (!usage || !Array.isArray(usage) || usage.length < cores)
+            this.bars.setUsage([]);
+        else
+            this.bars.setUsage(usage);
+    }
+    updateBars() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('processor-header-bars'))
+            return;
+        const usage = Utils.processorMonitor.getCurrentValue('cpuUsage');
+        if (!usage || !usage.total || isNaN(usage.total))
+            this.bars.setUsage([]);
+        else
+            this.bars.setUsage([usage]);
     }
     buildGraph() {
         if (this.graph) {
@@ -214,61 +222,77 @@ export default GObject.registerClass(class ProcessorHeader extends Header {
             graphWidth = Math.max(10, Math.min(500, graphWidth));
             this.graph.setWidth(graphWidth);
         });
-        Utils.processorMonitor.listen(this.graph, 'cpuUsage', () => {
-            if (!Config.get_boolean('processor-header-graph'))
-                return;
-            const usage = Utils.processorMonitor.getUsageHistory('cpuUsage');
-            this.graph.setUsageHistory(usage);
-        });
+        Utils.processorMonitor.listen(this.graph, 'cpuUsage', this.updateGraph.bind(this));
+    }
+    updateGraph() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('processor-header-graph'))
+            return;
+        const usage = Utils.processorMonitor.getUsageHistory('cpuUsage');
+        this.graph.setUsageHistory(usage);
     }
     buildPercentage() {
         {
             const useFourDigitStyle = Config.get_boolean('processor-header-percentage-core');
             this.percentage = new St.Label({
                 text: Utils.zeroStr + '%',
-                style_class: useFourDigitStyle
+                styleClass: useFourDigitStyle
                     ? 'astra-monitor-header-percentage4'
                     : 'astra-monitor-header-percentage3',
-                y_align: Clutter.ActorAlign.CENTER,
+                yAlign: Clutter.ActorAlign.CENTER,
             });
         }
         Config.bind('processor-header-percentage', this.percentage, 'visible', Gio.SettingsBindFlags.GET);
         Config.connect(this.percentage, 'changed::processor-header-percentage-core', () => {
             const useFourDigitStyle = Config.get_boolean('processor-header-percentage-core');
-            this.percentage.style_class = useFourDigitStyle
+            this.percentage.styleClass = useFourDigitStyle
                 ? 'astra-monitor-header-percentage4'
                 : 'astra-monitor-header-percentage3';
         });
-        Utils.processorMonitor.listen(this.percentage, 'cpuUsage', () => {
-            if (!Config.get_boolean('processor-header-percentage'))
-                return;
-            const cpuUsage = Utils.processorMonitor.getCurrentValue('cpuUsage');
-            if (!cpuUsage || !cpuUsage.total || isNaN(cpuUsage.total)) {
-                this.percentage.text = '0%';
-                return;
-            }
-            if (Config.get_boolean('processor-header-percentage-core')) {
-                const numberOfCores = Utils.processorMonitor.getNumberOfCores();
-                this.percentage.text = (cpuUsage.total * numberOfCores).toFixed(0) + '%';
-            }
-            else {
-                this.percentage.text = cpuUsage.total.toFixed(0) + '%';
-            }
-        });
+        Utils.processorMonitor.listen(this.percentage, 'cpuUsage', this.updatePercentage.bind(this));
     }
-    update() { }
+    updatePercentage() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('processor-header-percentage'))
+            return;
+        const cpuUsage = Utils.processorMonitor.getCurrentValue('cpuUsage');
+        if (!cpuUsage || !cpuUsage.total || isNaN(cpuUsage.total)) {
+            this.percentage.text = '0%';
+            return;
+        }
+        if (Config.get_boolean('processor-header-percentage-core')) {
+            const numberOfCores = Utils.processorMonitor.getNumberOfCores();
+            this.percentage.text = (cpuUsage.total * numberOfCores).toFixed(0) + '%';
+        }
+        else {
+            this.percentage.text = cpuUsage.total.toFixed(0) + '%';
+        }
+    }
+    update() {
+        const perCoreBars = Config.get_boolean('processor-header-bars-core');
+        if (perCoreBars) {
+            this.updateBarsCores();
+        }
+        else {
+            this.updateBars();
+        }
+        this.updateGraph();
+        this.updatePercentage();
+    }
     createTooltip() {
         this.tooltipMenu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
         Main.uiGroup.add_child(this.tooltipMenu.actor);
         this.tooltipMenu.actor.add_style_class_name('astra-monitor-tooltip-menu');
-        this.tooltipMenu.actor.x_expand = true;
+        this.tooltipMenu.actor.xExpand = true;
         this.tooltipMenu.actor.hide();
         this.tooltipItem = new PopupMenu.PopupMenuItem('', {
             reactive: true,
             style_class: 'astra-monitor-tooltip-item',
         });
-        this.tooltipItem.actor.x_expand = true;
-        this.tooltipItem.actor.x_align = Clutter.ActorAlign.CENTER;
+        this.tooltipItem.actor.xExpand = true;
+        this.tooltipItem.actor.xAlign = Clutter.ActorAlign.CENTER;
         this.tooltipItem.sensitive = true;
         this.tooltipMenu.addMenuItem(this.tooltipItem);
         Config.connect(this.tooltipMenu, 'changed::processor-header-tooltip', () => {

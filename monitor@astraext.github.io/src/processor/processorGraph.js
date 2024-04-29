@@ -43,43 +43,43 @@ export default GObject.registerClass(class ProcessorGraph extends GraphBase {
         this.bgColor = Utils.parseRGBA(bg);
         if (this.axis100Label) {
             if (lightTheme)
-                this.axis100Label.style_class = 'astra-monitor-graph-label-light';
+                this.axis100Label.styleClass = 'astra-monitor-graph-label-light';
             else
-                this.axis100Label.style_class = 'astra-monitor-graph-label';
+                this.axis100Label.styleClass = 'astra-monitor-graph-label';
         }
         if (this.axis50Label) {
             if (lightTheme)
-                this.axis50Label.style_class = 'astra-monitor-graph-label-light';
+                this.axis50Label.styleClass = 'astra-monitor-graph-label-light';
             else
-                this.axis50Label.style_class = 'astra-monitor-graph-label';
+                this.axis50Label.styleClass = 'astra-monitor-graph-label';
         }
         if (this.axis0Label) {
             if (lightTheme)
-                this.axis0Label.style_class = 'astra-monitor-graph-label-light';
+                this.axis0Label.styleClass = 'astra-monitor-graph-label-light';
             else
-                this.axis0Label.style_class = 'astra-monitor-graph-label';
+                this.axis0Label.styleClass = 'astra-monitor-graph-label';
         }
         if (this.thenLabel) {
             if (lightTheme)
-                this.thenLabel.style_class = 'astra-monitor-graph-label-then-light';
+                this.thenLabel.styleClass = 'astra-monitor-graph-label-then-light';
             else
-                this.thenLabel.style_class = 'astra-monitor-graph-label-then';
+                this.thenLabel.styleClass = 'astra-monitor-graph-label-then';
         }
         if (this.nowLabel) {
             if (lightTheme)
-                this.nowLabel.style_class = 'astra-monitor-graph-label-now-light';
+                this.nowLabel.styleClass = 'astra-monitor-graph-label-now-light';
             else
-                this.nowLabel.style_class = 'astra-monitor-graph-label-now';
+                this.nowLabel.styleClass = 'astra-monitor-graph-label-now';
         }
     }
     buildHistoryGrid() {
         if (!this.historyGrid)
             return;
-        this.axis100Label = new St.Label({ text: '100%', y_align: Clutter.ActorAlign.START });
+        this.axis100Label = new St.Label({ text: '100%', yAlign: Clutter.ActorAlign.START });
         this.historyGrid.attach(this.axis100Label, 2, 0, 1, 1);
-        this.axis50Label = new St.Label({ text: '50%', y_align: Clutter.ActorAlign.CENTER });
+        this.axis50Label = new St.Label({ text: '50%', yAlign: Clutter.ActorAlign.CENTER });
         this.historyGrid.attach(this.axis50Label, 2, 1, 1, 1);
-        this.axis0Label = new St.Label({ text: '0%', y_align: Clutter.ActorAlign.END });
+        this.axis0Label = new St.Label({ text: '0%', yAlign: Clutter.ActorAlign.END });
         this.historyGrid.attach(this.axis0Label, 2, 2, 1, 1);
         const seconds = Utils.processorMonitor.historyLength * Config.get_double('processor-update');
         const limitInMins = seconds / 60;

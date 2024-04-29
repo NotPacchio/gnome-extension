@@ -28,33 +28,33 @@ export default GObject.registerClass(class GraphBase extends St.BoxLayout {
             params.width = 50;
         if (params.mini === undefined)
             params.mini = false;
-        if (params.x_align === undefined)
-            params.x_align = Clutter.ActorAlign.CENTER;
-        if (params.y_align === undefined)
-            params.y_align = Clutter.ActorAlign.CENTER;
+        if (params.xAlign === undefined)
+            params.xAlign = Clutter.ActorAlign.CENTER;
+        if (params.yAlign === undefined)
+            params.yAlign = Clutter.ActorAlign.CENTER;
         if (params.mini)
-            params.y_align = Clutter.ActorAlign.FILL;
+            params.yAlign = Clutter.ActorAlign.FILL;
         super({
-            style_class: 'astra-monitor-graph-container',
-            x_align: params.x_align,
-            x_expand: true,
-            y_align: params.y_align,
-            y_expand: true,
+            styleClass: 'astra-monitor-graph-container',
+            xAlign: params.xAlign,
+            xExpand: true,
+            yAlign: params.yAlign,
+            yExpand: true,
         });
         this.mini = params.mini;
         this.historyLimit = params.width;
-        const style_class = this.mini ? 'astra-monitor-graph-mini' : 'astra-monitor-graph';
+        const styleClass = this.mini ? 'astra-monitor-graph-mini' : 'astra-monitor-graph';
         this.historyChart = new St.DrawingArea({
-            style_class: style_class,
+            styleClass: styleClass,
             style: `width:${params.width}px;`,
         });
         if (!this.mini) {
             this.grid = new St.Widget({
-                layout_manager: new Clutter.GridLayout({
+                layoutManager: new Clutter.GridLayout({
                     orientation: Clutter.Orientation.VERTICAL,
                 }),
             });
-            this.historyGrid = this.grid.layout_manager;
+            this.historyGrid = this.grid.layoutManager;
             if (this.historyGrid)
                 this.historyGrid.attach(this.historyChart, 0, 0, 2, 3);
             this.add_child(this.grid);

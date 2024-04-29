@@ -69,6 +69,10 @@ class Utils {
         Utils.commandsPath = null;
         for (const task of Utils.lowPriorityTasks)
             GLib.source_remove(task);
+        Utils.lowPriorityTasks = [];
+        for (const task of Utils.timeoutTasks)
+            GLib.source_remove(task);
+        Utils.timeoutTasks = [];
         try {
             Config.clearAll();
         }
@@ -1465,10 +1469,10 @@ class Utils {
             });
         });
     }
-    static getLocalIcon(icon_name) {
+    static getLocalIcon(iconName) {
         if (!Utils.metadata || !Utils.metadata.path)
             return null;
-        return Gio.icon_new_for_string(`${Utils.metadata.path}/icons/hicolor/scalable/actions/${icon_name}.svg`);
+        return Gio.icon_new_for_string(`${Utils.metadata.path}/icons/hicolor/scalable/actions/${iconName}.svg`);
     }
     static getNetworkInterfacesSync() {
         const devices = new Map();
@@ -1790,6 +1794,14 @@ class Utils {
         });
         Utils.lowPriorityTasks.push(task);
     }
+    static timeoutTask(callback, timeout, priority = GLib.PRIORITY_DEFAULT) {
+        const task = GLib.timeout_add(priority, timeout, () => {
+            callback();
+            Utils.timeoutTasks = Utils.timeoutTasks.filter(id => id !== task);
+            return GLib.SOURCE_REMOVE;
+        });
+        Utils.timeoutTasks.push(task);
+    }
     static configUpdateFixes() {
         const selectedGpu = Config.get_json('processor-menu-gpu');
         if (selectedGpu && selectedGpu.domain) {
@@ -1831,35 +1843,35 @@ class Utils {
     static unitToIcon(unit) {
         const icon = {
             gicon: Utils.getLocalIcon('am-dialog-info-symbolic'),
-            fallback_icon_name: 'dialog-info-symbolic',
+            fallbackIconName: 'dialog-info-symbolic',
         };
         if (unit === '°C' || unit === 'C' || unit === '°F' || unit === 'F') {
             icon.gicon = Utils.getLocalIcon('am-temperature-symbolic');
-            icon.fallback_icon_name = 'temperature-symbolic';
+            icon.fallbackIconName = 'temperature-symbolic';
         }
         else if (unit === 'RPM') {
             icon.gicon = Utils.getLocalIcon('am-fan-symbolic');
-            icon.fallback_icon_name = 'fan-symbolic';
+            icon.fallbackIconName = 'fan-symbolic';
         }
         else if (unit === 'V' || unit === 'mV') {
             icon.gicon = Utils.getLocalIcon('am-voltage-symbolic');
-            icon.fallback_icon_name = 'battery-symbolic';
+            icon.fallbackIconName = 'battery-symbolic';
         }
         else if (unit === 'kW' || unit === 'W') {
             icon.gicon = Utils.getLocalIcon('am-power-symbolic');
-            icon.fallback_icon_name = 'plug-symbolic';
+            icon.fallbackIconName = 'plug-symbolic';
         }
         else if (unit === 'A' || unit === 'mA') {
             icon.gicon = Utils.getLocalIcon('am-current-symbolic');
-            icon.fallback_icon_name = 'battery-symbolic';
+            icon.fallbackIconName = 'battery-symbolic';
         }
         else if (unit === 'J') {
             icon.gicon = Utils.getLocalIcon('am-power-symbolic');
-            icon.fallback_icon_name = 'battery-symbolic';
+            icon.fallbackIconName = 'battery-symbolic';
         }
         else if (unit === 'GHz' || unit === 'MHz' || unit === 'Hz') {
             icon.gicon = Utils.getLocalIcon('am-frequency-symbolic');
-            icon.fallback_icon_name = 'battery-symbolic';
+            icon.fallbackIconName = 'battery-symbolic';
         }
         return icon;
     }
@@ -1969,4 +1981,5 @@ Utils.sensorsPrefix = ['temp', 'fan', 'in', 'power', 'curr', 'energy', 'pwm', 'f
 Utils.cachedUptimeSeconds = 0;
 Utils.uptimeTimer = 0;
 Utils.lowPriorityTasks = [];
+Utils.timeoutTasks = [];
 export default Utils;

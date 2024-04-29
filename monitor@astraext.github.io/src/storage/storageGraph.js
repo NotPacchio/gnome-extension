@@ -51,27 +51,27 @@ export default GObject.registerClass(class StorageGraph extends GraphBase {
         this.bgColor = Utils.parseRGBA(bg);
         if (this.maxReadSpeedLabel) {
             if (lightTheme)
-                this.maxReadSpeedLabel.style_class = 'astra-monitor-graph-label-light';
+                this.maxReadSpeedLabel.styleClass = 'astra-monitor-graph-label-light';
             else
-                this.maxReadSpeedLabel.style_class = 'astra-monitor-graph-label';
+                this.maxReadSpeedLabel.styleClass = 'astra-monitor-graph-label';
         }
         if (this.maxWriteSpeedLabel) {
             if (lightTheme)
-                this.maxWriteSpeedLabel.style_class = 'astra-monitor-graph-label-light';
+                this.maxWriteSpeedLabel.styleClass = 'astra-monitor-graph-label-light';
             else
-                this.maxWriteSpeedLabel.style_class = 'astra-monitor-graph-label';
+                this.maxWriteSpeedLabel.styleClass = 'astra-monitor-graph-label';
         }
         if (this.thenLabel) {
             if (lightTheme)
-                this.thenLabel.style_class = 'astra-monitor-graph-label-then-light';
+                this.thenLabel.styleClass = 'astra-monitor-graph-label-then-light';
             else
-                this.thenLabel.style_class = 'astra-monitor-graph-label-then';
+                this.thenLabel.styleClass = 'astra-monitor-graph-label-then';
         }
         if (this.nowLabel) {
             if (lightTheme)
-                this.nowLabel.style_class = 'astra-monitor-graph-label-now-light';
+                this.nowLabel.styleClass = 'astra-monitor-graph-label-now-light';
             else
-                this.nowLabel.style_class = 'astra-monitor-graph-label-now';
+                this.nowLabel.styleClass = 'astra-monitor-graph-label-now';
         }
     }
     buildHistoryGrid() {
@@ -79,16 +79,16 @@ export default GObject.registerClass(class StorageGraph extends GraphBase {
             return;
         this.maxReadSpeedLabel = new St.Label({
             text: '-',
-            y_align: Clutter.ActorAlign.START,
+            yAlign: Clutter.ActorAlign.START,
         });
         this.historyGrid.attach(this.maxReadSpeedLabel, 2, 0, 1, 1);
         this.maxWriteSpeedLabel = new St.Label({
             text: '',
-            y_align: Clutter.ActorAlign.CENTER,
+            yAlign: Clutter.ActorAlign.CENTER,
             style: 'margin-top:10px;',
         });
         this.historyGrid.attach(this.maxWriteSpeedLabel, 2, 1, 1, 1);
-        const label = new St.Label({ text: '', y_align: Clutter.ActorAlign.END });
+        const label = new St.Label({ text: '', yAlign: Clutter.ActorAlign.END });
         this.historyGrid.attach(label, 2, 2, 1, 1);
         const seconds = Utils.memoryMonitor.historyLength * Config.get_double('memory-update');
         const limitInMins = seconds / 60;

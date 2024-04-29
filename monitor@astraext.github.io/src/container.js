@@ -24,6 +24,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import Utils from './utils/utils.js';
 import Config from './config.js';
+import CompactHeader from './compact.js';
 import ProcessorHeader from './processor/processorHeader.js';
 import GpuHeader from './gpu/gpuHeader.js';
 import MemoryHeader from './memory/memoryHeader.js';
@@ -43,10 +44,10 @@ export default GObject.registerClass(class AstraMonitorContainer extends PanelMe
             MenuBase.openingSide = St.Side.LEFT;
         this.box = new St.BoxLayout({
             vertical: false,
-            x_expand: true,
-            y_expand: true,
-            x_align: Clutter.ActorAlign.START,
-            y_align: Clutter.ActorAlign.FILL,
+            xExpand: true,
+            yExpand: true,
+            xAlign: Clutter.ActorAlign.START,
+            yAlign: Clutter.ActorAlign.FILL,
             style: this.computeStyle(),
         });
         this.add_child(this.box);
@@ -89,6 +90,10 @@ export default GObject.registerClass(class AstraMonitorContainer extends PanelMe
         Utils.log('Reordering widgets');
         const monitors = Utils.getMonitorsOrder();
         let position = 0;
+        if (Config.get_string('panel-box') === 'left') {
+            this.box.remove_child(this.compactHeader);
+            this.box.insert_child_at_index(this.compactHeader, position++);
+        }
         for (const monitor of monitors) {
             const widget = this.widgets.get(monitor);
             if (!widget)
@@ -96,9 +101,15 @@ export default GObject.registerClass(class AstraMonitorContainer extends PanelMe
             this.box.remove_child(widget);
             this.box.insert_child_at_index(widget, position++);
         }
+        if (Config.get_string('panel-box') !== 'left') {
+            this.box.remove_child(this.compactHeader);
+            this.box.insert_child_at_index(this.compactHeader, position++);
+        }
     }
     setup() {
         const monitors = Utils.getMonitorsOrder();
+        if (Config.get_string('panel-box') === 'left')
+            this.addCompactHeader();
         for (const monitor of monitors) {
             if (monitor === 'processor') {
                 const processorHeader = new ProcessorHeader();
@@ -137,6 +148,24 @@ export default GObject.registerClass(class AstraMonitorContainer extends PanelMe
                 continue;
             }
         }
+        if (Config.get_string('panel-box') !== 'left')
+            this.addCompactHeader();
+    }
+    addCompactHeader() {
+        this.compactHeader = new CompactHeader();
+        this.compactHeader.visible = Config.get_boolean('compact-mode');
+        this.addWidget('compact', this.compactHeader);
+        this.compactHeader.compact(this.compact.bind(this));
+        Config.connect(this, 'changed::compact-mode', () => {
+            this.compactHeader.visible = Config.get_boolean('compact-mode');
+        });
+    }
+    compact(compacted) {
+        for (const monitor of this.widgets.values()) {
+            if (monitor instanceof CompactHeader)
+                continue;
+            monitor.setCompacted(compacted);
+        }
     }
     place(uuid) {
         this.uuid = uuid;
@@ -144,6 +173,7 @@ export default GObject.registerClass(class AstraMonitorContainer extends PanelMe
         const order = Config.get_int('panel-box-order');
         Utils.log(`Placing container in ${panelBox} box at position ${order}`);
         Main.panel.addToStatusArea(this.uuid, this, order, panelBox);
+        this.compactHeader.startup();
     }
     updatePanel() {
         const panelBox = Config.get_string('panel-box');
@@ -156,6 +186,7 @@ export default GObject.registerClass(class AstraMonitorContainer extends PanelMe
         const order = Config.get_int('panel-box-order');
         Utils.log(`Reordering container in ${panelBox} box at position ${order}`);
         Main.panel._addToPanelBox(this.uuid, this, order, boxContainer);
+        this.reorderWidgets();
     }
     destroy() {
         Utils.log('Destroying container');

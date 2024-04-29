@@ -52,8 +52,8 @@ export default class ProcessorMenu extends MenuBase {
         const defaultStyle = 'max-width: 150px;';
         const hoverButton = new St.Button({
             reactive: true,
-            track_hover: true,
-            style_class: 'astra-monitor-menu-label astra-monitor-menu-section-end',
+            trackHover: true,
+            styleClass: 'astra-monitor-menu-label astra-monitor-menu-section-end',
             style: defaultStyle,
         });
         const hoverLabel = new St.Label({
@@ -91,7 +91,7 @@ export default class ProcessorMenu extends MenuBase {
         this.cpuInfoPopup.hideable = [];
         this.cpuInfoPopup.addToMenu(new St.Label({
             text: cpuName,
-            style_class: 'astra-monitor-menu-sub-header',
+            styleClass: 'astra-monitor-menu-sub-header',
         }), 2);
         let reference = null;
         for (const key in cpuInfo) {
@@ -123,7 +123,7 @@ export default class ProcessorMenu extends MenuBase {
                 if (i === 0) {
                     keyLabel = new St.Label({
                         text: key,
-                        style_class: 'astra-monitor-menu-sub-key',
+                        styleClass: 'astra-monitor-menu-sub-key',
                     });
                 }
                 else {
@@ -159,33 +159,33 @@ export default class ProcessorMenu extends MenuBase {
     addPercentage() {
         const defaultStyle = 'max-width:150px;';
         const grid = new Grid({ styleClass: 'astra-monitor-menu-subgrid' });
-        let label = new St.Label({ text: _('Total:'), style_class: 'astra-monitor-menu-label' });
+        let label = new St.Label({ text: _('Total:'), styleClass: 'astra-monitor-menu-label' });
         grid.addToGrid(label);
         this.cpuTotalPerc = new St.Label({
             text: '0%',
-            style_class: 'astra-monitor-menu-value',
-            x_expand: true,
+            styleClass: 'astra-monitor-menu-value',
+            xExpand: true,
         });
         grid.addToGrid(this.cpuTotalPerc);
-        label = new St.Label({ text: _('User:'), style_class: 'astra-monitor-menu-label' });
+        label = new St.Label({ text: _('User:'), styleClass: 'astra-monitor-menu-label' });
         grid.addToGrid(label);
         this.cpuUserPerc = new St.Label({
             text: '0%',
-            style_class: 'astra-monitor-menu-value',
-            x_expand: true,
+            styleClass: 'astra-monitor-menu-value',
+            xExpand: true,
         });
         grid.addToGrid(this.cpuUserPerc);
-        label = new St.Label({ text: _('System:'), style_class: 'astra-monitor-menu-label' });
+        label = new St.Label({ text: _('System:'), styleClass: 'astra-monitor-menu-label' });
         grid.addToGrid(label);
         this.cpuSystemPerc = new St.Label({
             text: '0%',
-            style_class: 'astra-monitor-menu-value',
-            x_expand: true,
+            styleClass: 'astra-monitor-menu-value',
+            xExpand: true,
         });
         grid.addToGrid(this.cpuSystemPerc);
         const hoverButton = new St.Button({
             reactive: true,
-            track_hover: true,
+            trackHover: true,
             style: defaultStyle,
         });
         hoverButton.set_child(grid);
@@ -207,56 +207,56 @@ export default class ProcessorMenu extends MenuBase {
         this.cpuCategoryUsagePopup.addMenuSection(_('CPU Category Usage Raw Info'));
         this.cpuCategoryUsagePopup.addToMenu(new St.Label({
             text: _('User'),
-            style_class: 'astra-monitor-menu-sub-key',
+            styleClass: 'astra-monitor-menu-sub-key',
         }));
         const userLabel = new St.Label({ text: '-' });
         this.cpuCategoryUsagePopup.addToMenu(userLabel);
         this.cpuCategoryUsagePopup.userLabel = userLabel;
         this.cpuCategoryUsagePopup.addToMenu(new St.Label({
             text: _('Nice'),
-            style_class: 'astra-monitor-menu-sub-key',
+            styleClass: 'astra-monitor-menu-sub-key',
         }));
         const niceLabel = new St.Label({ text: '-' });
         this.cpuCategoryUsagePopup.addToMenu(niceLabel);
         this.cpuCategoryUsagePopup.niceLabel = niceLabel;
         this.cpuCategoryUsagePopup.addToMenu(new St.Label({
             text: _('System'),
-            style_class: 'astra-monitor-menu-sub-key',
+            styleClass: 'astra-monitor-menu-sub-key',
         }));
         const systemLabel = new St.Label({ text: '-' });
         this.cpuCategoryUsagePopup.addToMenu(systemLabel);
         this.cpuCategoryUsagePopup.systemLabel = systemLabel;
         this.cpuCategoryUsagePopup.addToMenu(new St.Label({
             text: _('Idle'),
-            style_class: 'astra-monitor-menu-sub-key',
+            styleClass: 'astra-monitor-menu-sub-key',
         }));
         const idleLabel = new St.Label({ text: '-' });
         this.cpuCategoryUsagePopup.addToMenu(idleLabel);
         this.cpuCategoryUsagePopup.idleLabel = idleLabel;
         this.cpuCategoryUsagePopup.addToMenu(new St.Label({
             text: _('I/O wait'),
-            style_class: 'astra-monitor-menu-sub-key',
+            styleClass: 'astra-monitor-menu-sub-key',
         }));
         const iowaitLabel = new St.Label({ text: '-' });
         this.cpuCategoryUsagePopup.addToMenu(iowaitLabel);
         this.cpuCategoryUsagePopup.iowaitLabel = iowaitLabel;
         this.cpuCategoryUsagePopup.addToMenu(new St.Label({
             text: _('IRQ'),
-            style_class: 'astra-monitor-menu-sub-key',
+            styleClass: 'astra-monitor-menu-sub-key',
         }));
         const irqLabel = new St.Label({ text: '-' });
         this.cpuCategoryUsagePopup.addToMenu(irqLabel);
         this.cpuCategoryUsagePopup.irqLabel = irqLabel;
         this.cpuCategoryUsagePopup.addToMenu(new St.Label({
             text: _('Soft IRQ'),
-            style_class: 'astra-monitor-menu-sub-key',
+            styleClass: 'astra-monitor-menu-sub-key',
         }));
         const softirqLabel = new St.Label({ text: '-' });
         this.cpuCategoryUsagePopup.addToMenu(softirqLabel);
         this.cpuCategoryUsagePopup.softirqLabel = softirqLabel;
         this.cpuCategoryUsagePopup.addToMenu(new St.Label({
             text: _('Steal'),
-            style_class: 'astra-monitor-menu-sub-key',
+            styleClass: 'astra-monitor-menu-sub-key',
         }));
         const stealLabel = new St.Label({ text: '-' });
         this.cpuCategoryUsagePopup.addToMenu(stealLabel);
@@ -266,7 +266,7 @@ export default class ProcessorMenu extends MenuBase {
         const defaultStyle = '';
         const hoverButton = new St.Button({
             reactive: true,
-            track_hover: true,
+            trackHover: true,
             style: defaultStyle,
         });
         const grid = new Grid({ styleClass: 'astra-monitor-menu-subgrid' });
@@ -277,7 +277,7 @@ export default class ProcessorMenu extends MenuBase {
             height: 0.8,
             mini: false,
             layout: 'horizontal',
-            x_align: Clutter.ActorAlign.START,
+            xAlign: Clutter.ActorAlign.START,
             style: 'margin-left:0.5em;margin-bottom:0;margin-right:0;border:solid 1px #555;',
             breakdownConfig: 'processor-menu-bars-breakdown',
         });
@@ -335,7 +335,7 @@ export default class ProcessorMenu extends MenuBase {
             const row = Math.floor(i / numCols) * 5;
             const label = new St.Label({
                 text: 'Core' + (i + 1),
-                style_class: 'astra-monitor-menu-sub-core',
+                styleClass: 'astra-monitor-menu-sub-core',
                 style: row ? defaultStyle + 'margin-top: 1em;' : defaultStyle,
             });
             grid.addGrid(label, col, row, 1, 1);
@@ -350,17 +350,17 @@ export default class ProcessorMenu extends MenuBase {
             grid.addGrid(bar, col, row + 1, 1, 1);
             const percentage = new St.Label({
                 text: '-',
-                style_class: 'astra-monitor-menu-sub-percentage',
+                styleClass: 'astra-monitor-menu-sub-percentage',
             });
             grid.addGrid(percentage, col, row + 2, 1, 1);
             const value = new St.Label({
                 text: '-',
-                style_class: 'astra-monitor-menu-sub-frequency-value',
+                styleClass: 'astra-monitor-menu-sub-frequency-value',
             });
             grid.addGrid(value, col, row + 3, 1, 1);
             const unit = new St.Label({
                 text: _('GHz'),
-                style_class: 'astra-monitor-menu-sub-frequency-unit',
+                styleClass: 'astra-monitor-menu-sub-frequency-unit',
             });
             grid.addGrid(unit, col, row + 4, 1, 1);
             this.cpuCoresUsagePopup.cores.set(i, {
@@ -378,7 +378,7 @@ export default class ProcessorMenu extends MenuBase {
         const defaultStyle = '';
         const hoverButton = new St.Button({
             reactive: true,
-            track_hover: true,
+            trackHover: true,
             style: defaultStyle,
         });
         const grid = new Grid({ styleClass: 'astra-monitor-menu-subgrid' });
@@ -388,14 +388,14 @@ export default class ProcessorMenu extends MenuBase {
         for (let i = 0; i < numProcesses; i++) {
             const label = new St.Label({
                 text: '',
-                style_class: 'astra-monitor-menu-cmd-name',
-                x_expand: true,
+                styleClass: 'astra-monitor-menu-cmd-name',
+                xExpand: true,
             });
             grid.addToGrid(label);
             const percentage = new St.Label({
                 text: '',
-                style_class: 'astra-monitor-menu-cmd-usage',
-                x_expand: true,
+                styleClass: 'astra-monitor-menu-cmd-usage',
+                xExpand: true,
             });
             grid.addToGrid(percentage);
             this.topProcesses.push({ label, percentage });
@@ -420,28 +420,28 @@ export default class ProcessorMenu extends MenuBase {
         section.style = 'min-width:500px;';
         this.topProcessesPopup.processes = new Map();
         const grid = new Grid({
-            x_expand: true,
-            x_align: Clutter.ActorAlign.START,
+            xExpand: true,
+            xAlign: Clutter.ActorAlign.START,
             numCols: 2,
             styleClass: 'astra-monitor-menu-subgrid',
         });
         for (let i = 0; i < ProcessorMonitor.TOP_PROCESSES_LIMIT; i++) {
             const percentage = new St.Label({
                 text: '',
-                style_class: 'astra-monitor-menu-cmd-usage',
-                x_expand: true,
-                y_expand: true,
-                y_align: Clutter.ActorAlign.CENTER,
+                styleClass: 'astra-monitor-menu-cmd-usage',
+                xExpand: true,
+                yExpand: true,
+                yAlign: Clutter.ActorAlign.CENTER,
             });
             grid.addGrid(percentage, 0, i * 2, 1, 2);
             const label = new St.Label({
                 text: '',
-                style_class: 'astra-monitor-menu-cmd-name-full',
+                styleClass: 'astra-monitor-menu-cmd-name-full',
             });
             grid.addGrid(label, 1, i * 2, 1, 1);
             const description = new St.Label({
                 text: '',
-                style_class: 'astra-monitor-menu-cmd-description',
+                styleClass: 'astra-monitor-menu-cmd-description',
             });
             grid.addGrid(description, 1, i * 2 + 1, 1, 1);
             this.topProcessesPopup.processes.set(i, { label, percentage, description });
@@ -453,71 +453,71 @@ export default class ProcessorMenu extends MenuBase {
         const defaultStyle = 'max-width:150px;';
         const hoverButton = new St.Button({
             reactive: true,
-            track_hover: true,
+            trackHover: true,
             style: defaultStyle,
         });
         const grid = new Grid({ styleClass: 'astra-monitor-menu-subgrid' });
         this.loadAverageValues = [];
         const loadsContainer = new St.Widget({
-            layout_manager: new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL }),
-            x_expand: true,
+            layoutManager: new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL }),
+            xExpand: true,
             style: 'margin-left:0;margin-right:0;',
         });
         const oneMinuteContainer = new St.Widget({
-            layout_manager: new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL }),
-            x_expand: true,
+            layoutManager: new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL }),
+            xExpand: true,
             style: 'margin-left:0;margin-right:0;',
         });
         const oneMinuteLabel = new St.Label({
             text: pgettext('short for 1 minute', '1m'),
-            style_class: 'astra-monitor-menu-label',
+            styleClass: 'astra-monitor-menu-label',
             style: 'padding-right:0.15em;',
         });
         oneMinuteContainer.add_child(oneMinuteLabel);
         const oneMinuteValueLabel = new St.Label({
             text: '-',
-            x_expand: true,
-            style_class: 'astra-monitor-menu-key-mid',
+            xExpand: true,
+            styleClass: 'astra-monitor-menu-key-mid',
         });
         oneMinuteContainer.add_child(oneMinuteValueLabel);
         oneMinuteContainer.set_width(50);
         this.loadAverageValues.push(oneMinuteValueLabel);
         loadsContainer.add_child(oneMinuteContainer);
         const fiveMinutesContainer = new St.Widget({
-            layout_manager: new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL }),
-            x_expand: true,
+            layoutManager: new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL }),
+            xExpand: true,
             style: 'margin-left:0;margin-right:0;',
         });
         const fiveMinutesLabel = new St.Label({
             text: pgettext('short for 5 minutes', '5m'),
-            style_class: 'astra-monitor-menu-label',
+            styleClass: 'astra-monitor-menu-label',
             style: 'padding-right:0.15em;',
         });
         fiveMinutesContainer.add_child(fiveMinutesLabel);
         const fiveMinutesValueLabel = new St.Label({
             text: '-',
-            x_expand: true,
-            style_class: 'astra-monitor-menu-key-mid',
+            xExpand: true,
+            styleClass: 'astra-monitor-menu-key-mid',
         });
         fiveMinutesContainer.add_child(fiveMinutesValueLabel);
         fiveMinutesContainer.set_width(50);
         this.loadAverageValues.push(fiveMinutesValueLabel);
         loadsContainer.add_child(fiveMinutesContainer);
         const fifteenMinutesContainer = new St.Widget({
-            layout_manager: new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL }),
-            x_expand: true,
+            layoutManager: new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL }),
+            xExpand: true,
             style: 'margin-left:0;margin-right:0;',
         });
         const fifteenMinutesLabel = new St.Label({
             text: pgettext('short for 15 minutes', '15m'),
-            style_class: 'astra-monitor-menu-label',
+            styleClass: 'astra-monitor-menu-label',
             style: 'padding-right:0.15em;',
         });
         fifteenMinutesContainer.add_child(fifteenMinutesLabel);
         const fifteenMinutesValueLabel = new St.Label({
             text: '-',
-            x_expand: true,
-            style_class: 'astra-monitor-menu-key-mid',
+            xExpand: true,
+            styleClass: 'astra-monitor-menu-key-mid',
         });
         fifteenMinutesContainer.add_child(fifteenMinutesValueLabel);
         fifteenMinutesContainer.set_width(50);
@@ -561,7 +561,7 @@ export default class ProcessorMenu extends MenuBase {
         this.addMenuSection(_('System uptime'));
         this.menuUptime = new St.Label({
             text: '',
-            style_class: 'astra-monitor-menu-uptime astra-monitor-menu-section-end',
+            styleClass: 'astra-monitor-menu-uptime astra-monitor-menu-section-end',
         });
         this.addToMenu(this.menuUptime, 2);
         this.menuUptimeTimer = null;

@@ -69,8 +69,8 @@ export default class ContinuosTaskManager {
             this.currentTask?.setSubprocess(proc);
             const stdinStream = proc.get_stdin_pipe();
             const stdoutStream = new Gio.DataInputStream({
-                base_stream: proc.get_stdout_pipe(),
-                close_base_stream: true,
+                baseStream: proc.get_stdout_pipe(),
+                closeBaseStream: true,
             });
             this.readOutput(resolve, reject, stdoutStream, stdinStream);
         });

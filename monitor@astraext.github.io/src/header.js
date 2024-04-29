@@ -18,6 +18,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
 import St from 'gi://St';
 import Atk from 'gi://Atk';
 import Clutter from 'gi://Clutter';
@@ -27,29 +28,29 @@ import Config from './config.js';
 export default GObject.registerClass(class Header extends St.Widget {
     constructor(name) {
         super({
-            name: 'AstraMonitorHeader',
             reactive: true,
-            can_focus: true,
-            track_hover: true,
-            style_class: 'panel-button astra-monitor-header',
-            accessible_name: name,
-            accessible_role: Atk.Role.MENU,
+            canFocus: true,
+            trackHover: true,
+            styleClass: 'panel-button astra-monitor-header',
+            accessibleName: name,
+            accessibleRole: Atk.Role.MENU,
             layoutManager: new Clutter.BinLayout(),
-            x_expand: true,
-            y_expand: true,
-            x_align: Clutter.ActorAlign.START,
-            y_align: Clutter.ActorAlign.FILL,
+            xExpand: true,
+            yExpand: true,
+            xAlign: Clutter.ActorAlign.START,
+            yAlign: Clutter.ActorAlign.FILL,
         });
         this.cachedHeight = { fill: -1, override: -1 };
+        this.waitForAllocation = false;
+        this.firstAllocation = true;
         this.name = name;
         Utils.verbose(`Creating ${this.name}`);
         this.box = new St.BoxLayout({
-            name: 'AstraMonitorHeaderBox',
-            x_expand: true,
-            y_expand: false,
-            x_align: Clutter.ActorAlign.START,
-            y_align: Clutter.ActorAlign.CENTER,
-            style_class: 'astra-monitor-header-box',
+            xExpand: true,
+            yExpand: false,
+            xAlign: Clutter.ActorAlign.START,
+            yAlign: Clutter.ActorAlign.CENTER,
+            styleClass: 'astra-monitor-header-box',
         });
         this.add_child(this.box);
         this.createTooltip();
@@ -76,6 +77,18 @@ export default GObject.registerClass(class Header extends St.Widget {
         Config.connect(this, 'changed::headers-height-override', this.setStyle.bind(this));
         this.box.connect('notify::allocation', () => {
             Utils.lowPriorityTask(this.setStyle.bind(this));
+        });
+        if (this.showConfig)
+            Config.bind(this.showConfig, this, 'visible', Gio.SettingsBindFlags.GET);
+        this.connect_after('notify::allocation', () => {
+            if (this.waitForAllocation) {
+                this.waitForAllocation = false;
+                if (this.firstAllocation)
+                    this.firstAllocation = false;
+                Utils.lowPriorityTask(() => {
+                    this.update();
+                });
+            }
         });
     }
     getMenu() {
@@ -123,6 +136,26 @@ export default GObject.registerClass(class Header extends St.Widget {
         else
             super.remove_child(child);
     }
+    get showConfig() {
+        return '';
+    }
+    setCompacted(compacted) {
+        if (compacted) {
+            this.visible = false;
+        }
+        else {
+            const show = this.showConfig;
+            this.visible = show === '' ? false : Config.get_boolean(show);
+            if (this.visible) {
+                this.waitForAllocation = true;
+                if (this.firstAllocation)
+                    return;
+                Utils.timeoutTask(() => {
+                    this.update();
+                }, 33);
+            }
+        }
+    }
     update() {
         Utils.error('update() needs to be overridden');
     }
@@ -144,7 +177,7 @@ export default GObject.registerClass(class Header extends St.Widget {
             });
         }
         const workArea = Main.layoutManager.getWorkAreaForMonitor(Main.layoutManager.primaryIndex);
-        const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+        const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scaleFactor;
         const verticalMargins = this.menu.actor.margin_top + this.menu.actor.margin_bottom;
         const maxHeight = Math.round((workArea.height - verticalMargins) / scaleFactor);
         this.menu.actor.style = `max-height: ${maxHeight}px;`;

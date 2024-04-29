@@ -33,9 +33,9 @@ class MenuBase extends PopupMenu.PopupMenu {
             Utils.verbose(`Creating ${params.name}`);
         if (params.scrollable) {
             const scrollView = new St.ScrollView({
-                x_expand: true,
-                y_expand: true,
-                y_align: Clutter.ActorAlign.START,
+                xExpand: true,
+                yExpand: true,
+                yAlign: Clutter.ActorAlign.START,
             });
             scrollView.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
             const boxLayout = new St.BoxLayout({
@@ -87,7 +87,7 @@ class MenuBase extends PopupMenu.PopupMenu {
         return { width: geometry.width, height: geometry.height };
     }
     addMenuSection(text, add = true, newLine = false) {
-        const label = new St.Label({ text, style_class: 'astra-monitor-menu-header-centered' });
+        const label = new St.Label({ text, styleClass: 'astra-monitor-menu-header-centered' });
         if (add) {
             if (newLine)
                 this.grid.newLine();
@@ -114,20 +114,20 @@ class MenuBase extends PopupMenu.PopupMenu {
     }
     addUtilityButtons(category, addButtons) {
         this.utilityBox = new St.BoxLayout({
-            style_class: 'astra-monitor-menu-button-box',
-            x_align: Clutter.ActorAlign.CENTER,
+            styleClass: 'astra-monitor-menu-button-box',
+            xAlign: Clutter.ActorAlign.CENTER,
             reactive: true,
-            x_expand: true,
+            xExpand: true,
         });
         if (addButtons)
             addButtons(this.utilityBox);
         const appSys = Shell.AppSystem.get_default();
         const app = appSys.lookup_app('gnome-system-monitor.desktop');
         if (app) {
-            const button = new St.Button({ style_class: 'button' });
+            const button = new St.Button({ styleClass: 'button' });
             button.child = new St.Icon({
                 gicon: Utils.getLocalIcon('am-system-monitor-symbolic'),
-                fallback_icon_name: 'org.gnome.SystemMonitor-symbolic',
+                fallbackIconName: 'org.gnome.SystemMonitor-symbolic',
             });
             button.connect('clicked', () => {
                 this.close(true);
@@ -135,10 +135,10 @@ class MenuBase extends PopupMenu.PopupMenu {
             });
             this.utilityBox.add_child(button);
         }
-        const button = new St.Button({ style_class: 'button' });
+        const button = new St.Button({ styleClass: 'button' });
         button.child = new St.Icon({
             gicon: Utils.getLocalIcon('am-settings-symbolic'),
-            fallback_icon_name: 'preferences-system-symbolic',
+            fallbackIconName: 'preferences-system-symbolic',
         });
         button.connect('clicked', () => {
             this.close(true);

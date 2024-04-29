@@ -42,7 +42,6 @@ export default GObject.registerClass(class NetworkHeader extends Header {
         this.setMenu(menu);
         this.resetMaxWidths();
         Config.connect(this, 'changed::network-indicators-order', this.addOrReorderIndicators.bind(this));
-        Config.bind('network-header-show', this, 'visible', Gio.SettingsBindFlags.GET);
         Config.connect(this, 'changed::visible', this.resetMaxWidths.bind(this));
         Config.connect(this, 'changed::network-header-io', this.resetMaxWidths.bind(this));
         Config.connect(this, 'changed::headers-font-family', this.resetMaxWidths.bind(this));
@@ -54,6 +53,9 @@ export default GObject.registerClass(class NetworkHeader extends Header {
         };
         Config.connect(this, 'changed::network-header-io-layout', updateIOLayout.bind(this));
         updateIOLayout();
+    }
+    get showConfig() {
+        return 'network-header-show';
     }
     addOrReorderIndicators() {
         const indicators = Utils.getIndicatorsOrder('network');
@@ -94,17 +96,17 @@ export default GObject.registerClass(class NetworkHeader extends Header {
         let iconSize = Config.get_int('network-header-icon-size');
         iconSize = Math.max(8, Math.min(30, iconSize));
         this.icon = new St.Icon({
-            fallback_gicon: Utils.getLocalIcon('am-network-symbolic'),
+            fallbackGicon: Utils.getLocalIcon('am-network-symbolic'),
             style: defaultStyle,
-            icon_size: iconSize,
-            y_expand: false,
-            y_align: Clutter.ActorAlign.CENTER,
-            x_align: Clutter.ActorAlign.CENTER,
+            iconSize: iconSize,
+            yExpand: false,
+            yAlign: Clutter.ActorAlign.CENTER,
+            xAlign: Clutter.ActorAlign.CENTER,
         });
         const setIconName = () => {
             const iconCustom = Config.get_string('network-header-icon-custom');
             if (iconCustom)
-                this.icon.icon_name = iconCustom;
+                this.icon.iconName = iconCustom;
             else
                 this.icon.gicon = Utils.getLocalIcon('am-network-symbolic');
         };
@@ -158,58 +160,64 @@ export default GObject.registerClass(class NetworkHeader extends Header {
             graphWidth = Math.max(10, Math.min(500, graphWidth));
             this.graph.setWidth(graphWidth);
         });
-        Utils.networkMonitor.listen(this.graph, 'networkIO', () => {
-            if (!Config.get_boolean('network-header-graph'))
-                return;
-            const usage = Utils.networkMonitor.getUsageHistory('networkIO');
-            this.graph.setUsageHistory(usage);
-        });
+        Utils.networkMonitor.listen(this.graph, 'networkIO', this.updateGraph.bind(this));
+    }
+    updateGraph() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('network-header-graph'))
+            return;
+        const usage = Utils.networkMonitor.getUsageHistory('networkIO');
+        this.graph.setUsageHistory(usage);
     }
     buildSpeed() {
         this.speedContainer = new St.BoxLayout({
-            x_align: Clutter.ActorAlign.START,
-            y_align: Clutter.ActorAlign.FILL,
-            y_expand: true,
+            xAlign: Clutter.ActorAlign.START,
+            yAlign: Clutter.ActorAlign.FILL,
+            yExpand: true,
             vertical: true,
             width: 1,
         });
         this.speed = new St.Label({
             text: '',
-            style_class: 'astra-monitor-header-speed-label',
+            styleClass: 'astra-monitor-header-speed-label',
             style: 'font-size: 0.65em;',
-            y_align: Clutter.ActorAlign.CENTER,
-            x_align: Clutter.ActorAlign.END,
-            x_expand: true,
-            y_expand: true,
+            yAlign: Clutter.ActorAlign.CENTER,
+            xAlign: Clutter.ActorAlign.END,
+            xExpand: true,
+            yExpand: true,
         });
         this.speedContainer.add_child(this.speed);
         Config.bind('network-header-io', this.speedContainer, 'visible', Gio.SettingsBindFlags.GET);
-        Utils.networkMonitor.listen(this.speedContainer, 'networkIO', () => {
-            if (!Config.get_boolean('network-header-io'))
-                return;
-            let upload = Utils.zeroStr + ' B/s';
-            let download = Utils.zeroStr + ' B/s';
-            const usage = Utils.networkMonitor.getCurrentValue('networkIO');
-            if (usage) {
-                let bytesUploadedPerSec = usage.bytesUploadedPerSec;
-                let bytesDownloadedPerSec = usage.bytesDownloadedPerSec;
-                const threshold = Config.get_int('network-header-io-threshold');
-                if (bytesUploadedPerSec < threshold * 1000)
-                    bytesUploadedPerSec = 0;
-                if (bytesDownloadedPerSec < threshold * 100)
-                    bytesDownloadedPerSec = 0;
-                const unit = Config.get_string('network-io-unit');
-                let maxFigures = Config.get_int('network-header-io-figures');
-                maxFigures = Math.max(1, Math.min(4, maxFigures));
-                upload = Utils.formatBytesPerSec(bytesUploadedPerSec, unit, maxFigures, true);
-                download = Utils.formatBytesPerSec(bytesDownloadedPerSec, unit, maxFigures, true);
-            }
-            if (this.ioLayout === 'horizontal')
-                this.speed.text = `${upload} | ${download}`;
-            else
-                this.speed.text = `${upload}\n${download}`;
-            this.fixSpeedContainerStyle();
-        });
+        Utils.networkMonitor.listen(this.speedContainer, 'networkIO', this.updateSpeed.bind(this));
+    }
+    updateSpeed() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('network-header-io'))
+            return;
+        let upload = Utils.zeroStr + ' B/s';
+        let download = Utils.zeroStr + ' B/s';
+        const usage = Utils.networkMonitor.getCurrentValue('networkIO');
+        if (usage) {
+            let bytesUploadedPerSec = usage.bytesUploadedPerSec;
+            let bytesDownloadedPerSec = usage.bytesDownloadedPerSec;
+            const threshold = Config.get_int('network-header-io-threshold');
+            if (bytesUploadedPerSec < threshold * 1000)
+                bytesUploadedPerSec = 0;
+            if (bytesDownloadedPerSec < threshold * 100)
+                bytesDownloadedPerSec = 0;
+            const unit = Config.get_string('network-io-unit');
+            let maxFigures = Config.get_int('network-header-io-figures');
+            maxFigures = Math.max(1, Math.min(4, maxFigures));
+            upload = Utils.formatBytesPerSec(bytesUploadedPerSec, unit, maxFigures, true);
+            download = Utils.formatBytesPerSec(bytesDownloadedPerSec, unit, maxFigures, true);
+        }
+        if (this.ioLayout === 'horizontal')
+            this.speed.text = `${upload} | ${download}`;
+        else
+            this.speed.text = `${upload}\n${download}`;
+        this.fixSpeedContainerStyle();
     }
     fixSpeedContainerStyle() {
         if (!this.speedContainer.get_parent())
@@ -247,19 +255,27 @@ export default GObject.registerClass(class NetworkHeader extends Header {
             max = 1;
         this.speedContainer.set_width(max);
     }
-    update() { }
+    update() {
+        this.maxWidths = [];
+        this.updateGraph();
+        this.updateSpeed();
+    }
+    redraw() {
+        this.maxWidths = [];
+        this.fixSpeedContainerStyle();
+    }
     createTooltip() {
         this.tooltipMenu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
         Main.uiGroup.add_child(this.tooltipMenu.actor);
         this.tooltipMenu.actor.add_style_class_name('astra-monitor-tooltip-menu');
-        this.tooltipMenu.actor.x_expand = true;
+        this.tooltipMenu.actor.xExpand = true;
         this.tooltipMenu.actor.hide();
         this.tooltipItem = new PopupMenu.PopupMenuItem('', {
             reactive: true,
             style_class: 'astra-monitor-tooltip-item',
         });
-        this.tooltipItem.actor.x_expand = true;
-        this.tooltipItem.actor.x_align = Clutter.ActorAlign.CENTER;
+        this.tooltipItem.actor.xExpand = true;
+        this.tooltipItem.actor.xAlign = Clutter.ActorAlign.CENTER;
         this.tooltipItem.sensitive = true;
         this.tooltipMenu.addMenuItem(this.tooltipItem);
         Config.connect(this.tooltipMenu, 'changed::network-header-tooltip', () => {

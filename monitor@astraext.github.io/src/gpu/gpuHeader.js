@@ -47,7 +47,9 @@ export default GObject.registerClass(class GpuHeader extends Header {
         const menu = new GpuMenu(this, 0.5, MenuBase.arrowAlignement);
         this.setMenu(menu);
         Config.connect(this, 'changed::gpu-indicators-order', this.addOrReorderIndicators.bind(this));
-        Config.bind('gpu-header-show', this, 'visible', Gio.SettingsBindFlags.GET);
+    }
+    get showConfig() {
+        return 'gpu-header-show';
     }
     addOrReorderIndicators() {
         const indicators = Utils.getIndicatorsOrder('gpu');
@@ -92,17 +94,17 @@ export default GObject.registerClass(class GpuHeader extends Header {
         let iconSize = Config.get_int('gpu-header-icon-size');
         iconSize = Math.max(8, Math.min(30, iconSize));
         this.icon = new St.Icon({
-            fallback_gicon: Utils.getLocalIcon('am-gpu-symbolic'),
+            fallbackGicon: Utils.getLocalIcon('am-gpu-symbolic'),
             style: defaultStyle,
-            icon_size: iconSize,
-            y_expand: false,
-            y_align: Clutter.ActorAlign.CENTER,
-            x_align: Clutter.ActorAlign.CENTER,
+            iconSize: iconSize,
+            yExpand: false,
+            yAlign: Clutter.ActorAlign.CENTER,
+            xAlign: Clutter.ActorAlign.CENTER,
         });
         const setIconName = () => {
             const iconCustom = Config.get_string('gpu-header-icon-custom');
             if (iconCustom)
-                this.icon.icon_name = iconCustom;
+                this.icon.iconName = iconCustom;
             else
                 this.icon.gicon = Utils.getLocalIcon('am-gpu-symbolic');
         };
@@ -201,23 +203,26 @@ export default GObject.registerClass(class GpuHeader extends Header {
             width: 0.5,
         });
         Config.bind('gpu-header-activity-bar', this.activityBar, 'visible', Gio.SettingsBindFlags.GET);
-        Utils.gpuMonitor.listen(this.activityBar, 'gpuUpdate', (data) => {
-            if (!Config.get_boolean('gpu-header-activity-bar'))
-                return;
-            const selectedGpu = Utils.gpuMonitor.getSelectedGpu();
-            if (!selectedGpu)
-                return;
-            if (!data)
-                return;
-            const selectedPci = `${selectedGpu.domain}:${selectedGpu.bus}.${selectedGpu.slot}`;
-            const gpuData = data.get(selectedPci);
-            if (!gpuData)
-                return;
-            if (!gpuData.activity || gpuData.activity.GFX === undefined)
-                this.activityBar.setUsage([]);
-            else
-                this.activityBar.setUsage([{ percent: gpuData.activity.GFX }]);
-        });
+        Utils.gpuMonitor.listen(this.activityBar, 'gpuUpdate', this.updateActivityBar.bind(this));
+    }
+    updateActivityBar(data) {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('gpu-header-activity-bar'))
+            return;
+        const selectedGpu = Utils.gpuMonitor.getSelectedGpu();
+        if (!selectedGpu)
+            return;
+        if (!data)
+            return;
+        const selectedPci = `${selectedGpu.domain}:${selectedGpu.bus}.${selectedGpu.slot}`;
+        const gpuData = data.get(selectedPci);
+        if (!gpuData)
+            return;
+        if (!gpuData.activity || gpuData.activity.GFX === undefined)
+            this.activityBar.setUsage([]);
+        else
+            this.activityBar.setUsage([{ percent: gpuData.activity.GFX }]);
     }
     buildActivityGraph() {
         if (this.activityGraph) {
@@ -237,43 +242,49 @@ export default GObject.registerClass(class GpuHeader extends Header {
             graphWidth = Math.max(10, Math.min(500, graphWidth));
             this.activityGraph.setWidth(graphWidth);
         });
-        Utils.gpuMonitor.listen(this.activityGraph, 'gpuUpdate', () => {
-            if (!Config.get_boolean('gpu-header-activity-graph'))
-                return;
-            const usage = Utils.gpuMonitor.getUsageHistory('gpu');
-            this.activityGraph.setUsageHistory(usage);
-        });
+        Utils.gpuMonitor.listen(this.activityGraph, 'gpuUpdate', this.updateActivityGraph.bind(this));
+    }
+    updateActivityGraph() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('gpu-header-activity-graph'))
+            return;
+        const usage = Utils.gpuMonitor.getUsageHistory('gpu');
+        this.activityGraph.setUsageHistory(usage);
     }
     buildActivityPercentage() {
         this.activityPercentage = new St.Label({
             text: Utils.zeroStr + '%',
-            style_class: 'astra-monitor-header-percentage3',
-            y_align: Clutter.ActorAlign.CENTER,
+            styleClass: 'astra-monitor-header-percentage3',
+            yAlign: Clutter.ActorAlign.CENTER,
         });
         Config.bind('gpu-header-activity-percentage', this.activityPercentage, 'visible', Gio.SettingsBindFlags.GET);
-        Utils.gpuMonitor.listen(this.activityPercentage, 'gpuUpdate', (data) => {
-            if (!Config.get_boolean('gpu-header-activity-percentage'))
-                return;
-            const selectedGpu = Utils.gpuMonitor.getSelectedGpu();
-            if (!selectedGpu) {
-                this.activityPercentage.text = '-%';
-                return;
-            }
-            if (!data) {
-                this.activityPercentage.text = '-%';
-                return;
-            }
-            const selectedPci = `${selectedGpu.domain}:${selectedGpu.bus}.${selectedGpu.slot}`;
-            const gpuData = data.get(selectedPci);
-            if (!gpuData) {
-                this.activityPercentage.text = '-%';
-                return;
-            }
-            if (!gpuData.activity || gpuData.activity.GFX === undefined)
-                this.activityPercentage.text = Utils.zeroStr + '%';
-            else
-                this.activityPercentage.text = gpuData.activity.GFX + '%';
-        });
+        Utils.gpuMonitor.listen(this.activityPercentage, 'gpuUpdate', this.updateActivityPercentage.bind(this));
+    }
+    updateActivityPercentage(data) {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('gpu-header-activity-percentage'))
+            return;
+        const selectedGpu = Utils.gpuMonitor.getSelectedGpu();
+        if (!selectedGpu) {
+            this.activityPercentage.text = '-%';
+            return;
+        }
+        if (!data) {
+            this.activityPercentage.text = '-%';
+            return;
+        }
+        const selectedPci = `${selectedGpu.domain}:${selectedGpu.bus}.${selectedGpu.slot}`;
+        const gpuData = data.get(selectedPci);
+        if (!gpuData) {
+            this.activityPercentage.text = '-%';
+            return;
+        }
+        if (!gpuData.activity || gpuData.activity.GFX === undefined)
+            this.activityPercentage.text = Utils.zeroStr + '%';
+        else
+            this.activityPercentage.text = gpuData.activity.GFX + '%';
     }
     buildMemoryBar() {
         if (this.memoryBar) {
@@ -289,23 +300,26 @@ export default GObject.registerClass(class GpuHeader extends Header {
             width: 0.5,
         });
         Config.bind('gpu-header-memory-bar', this.memoryBar, 'visible', Gio.SettingsBindFlags.GET);
-        Utils.gpuMonitor.listen(this.memoryBar, 'gpuUpdate', (data) => {
-            if (!Config.get_boolean('gpu-header-memory-bar'))
-                return;
-            const selectedGpu = Utils.gpuMonitor.getSelectedGpu();
-            if (!selectedGpu)
-                return;
-            if (!data)
-                return;
-            const selectedPci = `${selectedGpu.domain}:${selectedGpu.bus}.${selectedGpu.slot}`;
-            const gpuData = data.get(selectedPci);
-            if (!gpuData)
-                return;
-            if (!gpuData.vram || gpuData.vram.percent === undefined)
-                this.memoryBar.setUsage([]);
-            else
-                this.memoryBar.setUsage([{ percent: gpuData.vram.percent }]);
-        });
+        Utils.gpuMonitor.listen(this.memoryBar, 'gpuUpdate', this.updateMemoryBar.bind(this));
+    }
+    updateMemoryBar(data) {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('gpu-header-memory-bar'))
+            return;
+        const selectedGpu = Utils.gpuMonitor.getSelectedGpu();
+        if (!selectedGpu)
+            return;
+        if (!data)
+            return;
+        const selectedPci = `${selectedGpu.domain}:${selectedGpu.bus}.${selectedGpu.slot}`;
+        const gpuData = data.get(selectedPci);
+        if (!gpuData)
+            return;
+        if (!gpuData.vram || gpuData.vram.percent === undefined)
+            this.memoryBar.setUsage([]);
+        else
+            this.memoryBar.setUsage([{ percent: gpuData.vram.percent }]);
     }
     buildMemoryGraph() {
         if (this.memoryGraph) {
@@ -325,58 +339,72 @@ export default GObject.registerClass(class GpuHeader extends Header {
             graphWidth = Math.max(10, Math.min(500, graphWidth));
             this.memoryGraph.setWidth(graphWidth);
         });
-        Utils.gpuMonitor.listen(this.memoryGraph, 'gpuUpdate', () => {
-            if (!Config.get_boolean('gpu-header-memory-graph'))
-                return;
-            const usage = Utils.gpuMonitor.getUsageHistory('gpu');
-            this.memoryGraph.setUsageHistory(usage);
-        });
+        Utils.gpuMonitor.listen(this.memoryGraph, 'gpuUpdate', this.updateMemoryGraph.bind(this));
+    }
+    updateMemoryGraph() {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('gpu-header-memory-graph'))
+            return;
+        const usage = Utils.gpuMonitor.getUsageHistory('gpu');
+        this.memoryGraph.setUsageHistory(usage);
     }
     buildMemoryPercentage() {
         this.memoryPercentage = new St.Label({
             text: Utils.zeroStr + '%',
-            style_class: 'astra-monitor-header-percentage3',
-            y_align: Clutter.ActorAlign.CENTER,
+            styleClass: 'astra-monitor-header-percentage3',
+            yAlign: Clutter.ActorAlign.CENTER,
         });
         Config.bind('gpu-header-memory-percentage', this.memoryPercentage, 'visible', Gio.SettingsBindFlags.GET);
-        Utils.gpuMonitor.listen(this.memoryPercentage, 'gpuUpdate', (data) => {
-            if (!Config.get_boolean('gpu-header-memory-percentage'))
-                return;
-            const selectedGpu = Utils.gpuMonitor.getSelectedGpu();
-            if (!selectedGpu) {
-                this.memoryPercentage.text = '-%';
-                return;
-            }
-            if (!data) {
-                this.memoryPercentage.text = '-%';
-                return;
-            }
-            const selectedPci = `${selectedGpu.domain}:${selectedGpu.bus}.${selectedGpu.slot}`;
-            const gpuData = data.get(selectedPci);
-            if (!gpuData) {
-                this.memoryPercentage.text = '-%';
-                return;
-            }
-            if (!gpuData.vram || gpuData.vram.percent === undefined)
-                this.memoryPercentage.text = Utils.zeroStr + '%';
-            else
-                this.memoryPercentage.text = Math.round(gpuData.vram.percent) + '%';
-        });
+        Utils.gpuMonitor.listen(this.memoryPercentage, 'gpuUpdate', this.updateMemoryPercentage.bind(this));
+    }
+    updateMemoryPercentage(data) {
+        if (!this.visible)
+            return;
+        if (!Config.get_boolean('gpu-header-memory-percentage'))
+            return;
+        const selectedGpu = Utils.gpuMonitor.getSelectedGpu();
+        if (!selectedGpu) {
+            this.memoryPercentage.text = '-%';
+            return;
+        }
+        if (!data) {
+            this.memoryPercentage.text = '-%';
+            return;
+        }
+        const selectedPci = `${selectedGpu.domain}:${selectedGpu.bus}.${selectedGpu.slot}`;
+        const gpuData = data.get(selectedPci);
+        if (!gpuData) {
+            this.memoryPercentage.text = '-%';
+            return;
+        }
+        if (!gpuData.vram || gpuData.vram.percent === undefined)
+            this.memoryPercentage.text = Utils.zeroStr + '%';
+        else
+            this.memoryPercentage.text = Math.round(gpuData.vram.percent) + '%';
     }
     buildMemoryValue() { }
-    update() { }
+    update() {
+        const data = Utils.gpuMonitor.getCurrentValue('gpu');
+        this.updateActivityBar(data);
+        this.updateActivityGraph();
+        this.updateActivityPercentage(data);
+        this.updateMemoryBar(data);
+        this.updateMemoryGraph();
+        this.updateMemoryPercentage(data);
+    }
     createTooltip() {
         this.tooltipMenu = new PopupMenu.PopupMenu(this, 0.5, MenuBase.arrowAlignement);
         Main.uiGroup.add_child(this.tooltipMenu.actor);
         this.tooltipMenu.actor.add_style_class_name('astra-monitor-tooltip-menu');
-        this.tooltipMenu.actor.x_expand = true;
+        this.tooltipMenu.actor.xExpand = true;
         this.tooltipMenu.actor.hide();
         this.tooltipItem = new PopupMenu.PopupMenuItem('', {
             reactive: true,
             style_class: 'astra-monitor-tooltip-item',
         });
-        this.tooltipItem.actor.x_expand = true;
-        this.tooltipItem.actor.x_align = Clutter.ActorAlign.CENTER;
+        this.tooltipItem.actor.xExpand = true;
+        this.tooltipItem.actor.xAlign = Clutter.ActorAlign.CENTER;
         this.tooltipItem.sensitive = true;
         this.tooltipMenu.addMenuItem(this.tooltipItem);
         Config.connect(this.tooltipMenu, 'changed::gpu-header-tooltip', () => {

@@ -68,7 +68,7 @@ As Astra Monitor is in beta stage of development, we have an ambitious roadmap p
 
 <table style="text-align:center" align="center">
     <tr>
-        <th style="text-align:center">Beta<br>0/3</th>
+        <th style="text-align:center">Beta<br>2/3</th>
         <th style="text-align:center" colspan="2">Release<br>0/4</th>
     </tr>
     <tr>
@@ -77,17 +77,17 @@ As Astra Monitor is in beta stage of development, we have an ambitious roadmap p
         <th style="text-align:center">Late May 2024</th>
     </tr>
     <tr>
-        <td style="text-align:center">⏳<br>New Preferences Panel</td>
+        <td style="text-align:center">✅<br>New Preferences Panel</td>
         <td style="text-align:center">🔲<br>Battery Monitoring</td>
         <td style="text-align:center">🔲<br>User Custom Commands</td>
     </tr>
     <tr>
-        <td style="text-align:center">🔲<br>Compact Mode</td>
+        <td style="text-align:center">✅<br>Compact Mode</td>
         <td style="text-align:center">🔲<br>Themes</td>
         <td style="text-align:center">🔲<br>Continuos Monitoring Mode</td>
     </tr>
     <tr>
-        <td style="text-align:center">🔲<br>Settings Profiles</td>
+        <td style="text-align:center">⏳<br>Settings Profiles</td>
         <td style="text-align:center"></td>
         <td style="text-align:center"></td>
     </tr>

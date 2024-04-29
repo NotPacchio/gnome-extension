@@ -38,10 +38,10 @@ export default GObject.registerClass(class BarsBase extends St.BoxLayout {
             params.header = false;
         if (params.mini === undefined)
             params.mini = false;
-        if (params.x_align === undefined)
-            params.x_align = Clutter.ActorAlign.CENTER;
-        if (params.y_align === undefined)
-            params.y_align = Clutter.ActorAlign.CENTER;
+        if (params.xAlign === undefined)
+            params.xAlign = Clutter.ActorAlign.CENTER;
+        if (params.yAlign === undefined)
+            params.yAlign = Clutter.ActorAlign.CENTER;
         if (params.style === undefined)
             params.style = '';
         if (params.hideEmpty === undefined)
@@ -57,14 +57,14 @@ export default GObject.registerClass(class BarsBase extends St.BoxLayout {
         }
         style += params.style;
         if (params.mini) {
-            params.y_align = Clutter.ActorAlign.FILL;
+            params.yAlign = Clutter.ActorAlign.FILL;
         }
         super({
             style: style,
-            x_align: params.x_align,
-            x_expand: true,
-            y_align: params.y_align,
-            y_expand: true,
+            xAlign: params.xAlign,
+            xExpand: true,
+            yAlign: params.yAlign,
+            yExpand: true,
         });
         this.layout = params.layout;
         this.header = params.header;
@@ -82,16 +82,16 @@ export default GObject.registerClass(class BarsBase extends St.BoxLayout {
             if (this.layout === 'vertical') {
                 barConfig = {
                     reactive: false,
-                    track_hover: false,
-                    can_focus: false,
+                    trackHover: false,
+                    canFocus: false,
                     style: `width:${this.barSize}em;`,
                 };
             }
             else {
                 barConfig = {
                     reactive: false,
-                    track_hover: false,
-                    can_focus: false,
+                    trackHover: false,
+                    canFocus: false,
                     style: `height:${this.barSize}em;`,
                 };
             }
@@ -100,14 +100,14 @@ export default GObject.registerClass(class BarsBase extends St.BoxLayout {
                 let layerConfig;
                 if (this.layout === 'vertical') {
                     layerConfig = {
-                        style_class: 'astra-monitor-bars-vertical-bar',
-                        x_expand: true,
+                        styleClass: 'astra-monitor-bars-vertical-bar',
+                        xExpand: true,
                     };
                 }
                 else {
                     layerConfig = {
-                        style_class: 'astra-monitor-bars-horizontal-bar',
-                        y_expand: true,
+                        styleClass: 'astra-monitor-bars-horizontal-bar',
+                        yExpand: true,
                     };
                 }
                 const layer = new St.Widget(layerConfig);
@@ -141,7 +141,7 @@ export default GObject.registerClass(class BarsBase extends St.BoxLayout {
         if (this.mini)
             styleClass += '-mini';
         const bgStyle = 'astra-monitor-bg-' + Utils.themeStyle;
-        this.style_class = styleClass + ' ' + bgStyle;
+        this.styleClass = styleClass + ' ' + bgStyle;
     }
     setUsage(_usage) {
         Utils.log('setUsage MUST BE OVERWRITTEN');

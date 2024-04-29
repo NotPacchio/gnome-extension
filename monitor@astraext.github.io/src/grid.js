@@ -29,26 +29,26 @@ export default GObject.registerClass(class Grid extends St.Widget {
         if (params.orientation === undefined)
             params.orientation = Clutter.Orientation.VERTICAL;
         const data = {
-            style_class: params.styleClass,
+            styleClass: params.styleClass,
             name: 'AstraMonitorGrid',
-            layout_manager: new Clutter.GridLayout({ orientation: params.orientation }),
+            layoutManager: new Clutter.GridLayout({ orientation: params.orientation }),
         };
         if (params.style)
             data.style = params.style;
-        if (params.x_expand)
-            data.x_expand = params.x_expand;
+        if (params.xExpand)
+            data.xExpand = params.xExpand;
         else
-            data.x_expand = true;
-        if (params.y_expand)
-            data.y_expand = params.y_expand;
+            data.xExpand = true;
+        if (params.yExpand)
+            data.yExpand = params.yExpand;
         else
-            data.y_expand = true;
-        if (params.x_align)
-            data.x_align = params.x_align;
-        if (params.y_align)
-            data.y_align = params.y_align;
+            data.yExpand = true;
+        if (params.xAlign)
+            data.xAlign = params.xAlign;
+        if (params.yAlign)
+            data.yAlign = params.yAlign;
         super(data);
-        this.lm = this.layout_manager;
+        this.lm = this.layoutManager;
         this.currentRow = 0;
         this.currentCol = 0;
         this.numCols = params.numCols;

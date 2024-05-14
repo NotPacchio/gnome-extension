@@ -25,6 +25,7 @@ import Clutter from 'gi://Clutter';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import Utils from './utils/utils.js';
 import Config from './config.js';
+import ProfilesMenu from './profiles/profilesMenu.js';
 export default GObject.registerClass(class Header extends St.Widget {
     constructor(name) {
         super({
@@ -54,14 +55,17 @@ export default GObject.registerClass(class Header extends St.Widget {
         });
         this.add_child(this.box);
         this.createTooltip();
-        this.connect('button-press-event', (_widget, _event) => {
-            if (this.menu)
-                this.menu.toggle();
+        this.connect('button-press-event', (_widget, event) => {
+            if (event.get_button() === 1) {
+                this.click();
+            }
+            else {
+                this.clickAlt();
+            }
             return Clutter.EVENT_PROPAGATE;
         });
         this.connect('touch-event', (_widget, _event) => {
-            if (this.menu)
-                this.menu.toggle();
+            this.click();
             return Clutter.EVENT_PROPAGATE;
         });
         this.connect('hide', () => {
@@ -138,6 +142,14 @@ export default GObject.registerClass(class Header extends St.Widget {
     }
     get showConfig() {
         return '';
+    }
+    click() {
+        if (this.menu)
+            this.menu.toggle();
+    }
+    clickAlt() {
+        const profilesMenu = new ProfilesMenu(this, 0.5);
+        profilesMenu.open(true);
     }
     setCompacted(compacted) {
         if (compacted) {

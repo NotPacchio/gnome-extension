@@ -100,7 +100,6 @@ export default class GpuMonitor extends Monitor {
         }
     }
     startGpuTask() {
-        Utils.log('startGpuTask!');
         const selectedGpu = Utils.getSelectedGPU();
         if (!selectedGpu)
             return;

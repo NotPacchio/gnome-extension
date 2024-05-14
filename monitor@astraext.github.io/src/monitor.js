@@ -87,7 +87,7 @@ export default class Monitor {
                 Utils.log(this.name + ' update canceled: ' + key);
             }
             else {
-                Utils.error(e.message);
+                Utils.error(`${this.name} - ${key}: ${e.message}`);
             }
         });
     }

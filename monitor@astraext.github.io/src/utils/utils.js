@@ -599,26 +599,34 @@ class Utils {
             const hwmons = await Utils.listDirAsync(baseDir, { folders: true, files: false });
             await Promise.all(hwmons.map(async (hwmonInfo) => {
                 const hwmon = hwmonInfo.name;
-                let name = await Utils.readFileAsync(`${baseDir}/${hwmon}/name`, true);
+                let name = await Utils.readFileAsync(`${baseDir}/${hwmon}/name`);
                 if (!name)
                     return;
                 name = name.trim();
                 let addressAdded = false;
-                let address = await Utils.readFileAsync(`${baseDir}/${hwmon}/device/address`, true);
-                if (address) {
-                    address = address.trim();
-                    address = address.replace(/^0+:/, '');
-                    address = address.replace(/\.[0-9]*$/, '');
-                    address = address.replace(/:/g, '');
-                    name = `${name}-{$${address}}`;
-                    addressAdded = true;
-                }
-                if (!addressAdded) {
-                    address = await Utils.readFileAsync(`${baseDir}/${hwmon}/device/device`, true);
+                try {
+                    let address = await Utils.readFileAsync(`${baseDir}/${hwmon}/device/address`);
                     if (address) {
                         address = address.trim();
-                        address = address.replace(/^0x/, '');
+                        address = address.replace(/^0+:/, '');
+                        address = address.replace(/\.[0-9]*$/, '');
+                        address = address.replace(/:/g, '');
                         name = `${name}-{$${address}}`;
+                        addressAdded = true;
+                    }
+                }
+                catch (e) {
+                }
+                if (!addressAdded) {
+                    try {
+                        let address = await Utils.readFileAsync(`${baseDir}/${hwmon}/device/device`);
+                        if (address) {
+                            address = address.trim();
+                            address = address.replace(/^0x/, '');
+                            name = `${name}-{$${address}}`;
+                        }
+                    }
+                    catch (e) {
                     }
                 }
                 const files = await Utils.listDirAsync(`${baseDir}/${hwmon}`, {
@@ -638,7 +646,7 @@ class Utils {
                             return;
                         }
                         if (files.find(a => a.name === `${sensorName}_label`)) {
-                            const label = await Utils.readFileAsync(`${baseDir}/${hwmon}/${sensorName}_label`, true);
+                            const label = await Utils.readFileAsync(`${baseDir}/${hwmon}/${sensorName}_label`);
                             if (label)
                                 sensorName = label.trim();
                         }
@@ -1830,13 +1838,6 @@ class Utils {
         else if (height > 15 && height < 80) {
             Config.set('headers-height-override', height, 'int');
             Config.set('headers-height', 0, 'int');
-        }
-        let profiles = Config.get_json('profiles');
-        if (!profiles) {
-            profiles = {};
-            const currentProfile = Config.get_string('current-profile') || 'default';
-            profiles[currentProfile] = Config.getCurrentSettingsData(Config.globalSettingsKeys);
-            Config.set('profiles', profiles, 'json');
         }
     }
     static unitToIcon(unit) {

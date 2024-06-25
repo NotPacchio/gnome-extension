@@ -228,19 +228,16 @@ export default GObject.registerClass(class SensorsHeader extends Header {
         if (!this.sensors.get_parent())
             return;
         const calculateStyle = () => {
-            let defaultStyle = 'font-size:0.65em;';
-            const fontSize = Config.get_int('headers-font-size');
-            if (fontSize)
-                defaultStyle = `font-size:${fontSize}px;`;
             if (this.sensorsNum === 1 || this.sensorsLayout === 'horizontal')
-                return fontSize ? defaultStyle : 'font-size:1em';
-            const superHeight = this.valuesContainer.get_parent()?.get_allocation_box()?.get_height() ?? 0;
+                return 'font-size:1em;';
+            const superHeight = this.valuesContainer.get_parent()?.height ?? 0;
             let scaledHeight = superHeight / this.scaleFactor;
             if (scaledHeight <= 20)
-                return defaultStyle;
+                return 'font-size:0.65em;';
             scaledHeight = Math.round(scaledHeight / 3);
+            const fontSize = Config.get_int('headers-font-size');
             if (fontSize && fontSize < scaledHeight)
-                return defaultStyle;
+                return `font-size:${fontSize}px;`;
             return `font-size:${scaledHeight}px;`;
         };
         const style = calculateStyle();

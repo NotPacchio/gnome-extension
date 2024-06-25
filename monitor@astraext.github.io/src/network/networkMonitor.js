@@ -518,12 +518,7 @@ export default class NetworkMonitor extends Monitor {
     }
     async updateWirelessIwconfig() {
         const path = Utils.commandPathLookup('iwconfig');
-        let result = '';
-        try {
-            result = await Utils.executeCommandAsync(`${path}iwconfig`);
-        }
-        catch (e) {
-        }
+        const result = await Utils.executeCommandAsync(`${path}iwconfig`);
         if (!result)
             return false;
         const devices = new Map();

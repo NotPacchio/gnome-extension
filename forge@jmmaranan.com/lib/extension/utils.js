@@ -261,11 +261,16 @@ export function positionFromGrabOp(grabOp) {
 }
 
 export function allowResizeGrabOp(grabOp) {
+  grabOp &= ~1024; // ignore META_GRAB_OP_WINDOW_FLAG_UNCONSTRAINED
   return (
     grabOp === Meta.GrabOp.RESIZING_N ||
     grabOp === Meta.GrabOp.RESIZING_E ||
     grabOp === Meta.GrabOp.RESIZING_W ||
     grabOp === Meta.GrabOp.RESIZING_S ||
+    grabOp === Meta.GrabOp.RESIZING_NE ||
+    grabOp === Meta.GrabOp.RESIZING_NW ||
+    grabOp === Meta.GrabOp.RESIZING_SE ||
+    grabOp === Meta.GrabOp.RESIZING_SW ||
     grabOp === Meta.GrabOp.KEYBOARD_RESIZING_N ||
     grabOp === Meta.GrabOp.KEYBOARD_RESIZING_E ||
     grabOp === Meta.GrabOp.KEYBOARD_RESIZING_W ||
@@ -275,11 +280,16 @@ export function allowResizeGrabOp(grabOp) {
 }
 
 export function grabMode(grabOp) {
+  grabOp &= ~1024; // ignore META_GRAB_OP_WINDOW_FLAG_UNCONSTRAINED
   if (
     grabOp === Meta.GrabOp.RESIZING_N ||
     grabOp === Meta.GrabOp.RESIZING_E ||
     grabOp === Meta.GrabOp.RESIZING_W ||
     grabOp === Meta.GrabOp.RESIZING_S ||
+    grabOp === Meta.GrabOp.RESIZING_NE ||
+    grabOp === Meta.GrabOp.RESIZING_NW ||
+    grabOp === Meta.GrabOp.RESIZING_SE ||
+    grabOp === Meta.GrabOp.RESIZING_SW ||
     grabOp === Meta.GrabOp.KEYBOARD_RESIZING_N ||
     grabOp === Meta.GrabOp.KEYBOARD_RESIZING_E ||
     grabOp === Meta.GrabOp.KEYBOARD_RESIZING_W ||
@@ -295,6 +305,22 @@ export function grabMode(grabOp) {
     return GRAB_TYPES.MOVING;
   }
   return GRAB_TYPES.UNKNOWN;
+}
+
+export function decomposeGrabOp(grabOp) {
+  grabOp &= ~1024; // ignore META_GRAB_OP_WINDOW_FLAG_UNCONSTRAINED
+  switch (grabOp) {
+    case Meta.GrabOp.RESIZING_NE:
+      return [Meta.GrabOp.RESIZING_N, Meta.GrabOp.RESIZING_E];
+    case Meta.GrabOp.RESIZING_NW:
+      return [Meta.GrabOp.RESIZING_N, Meta.GrabOp.RESIZING_W];
+    case Meta.GrabOp.RESIZING_SE:
+      return [Meta.GrabOp.RESIZING_S, Meta.GrabOp.RESIZING_E];
+    case Meta.GrabOp.RESIZING_SW:
+      return [Meta.GrabOp.RESIZING_S, Meta.GrabOp.RESIZING_W];
+    default:
+      return [grabOp];
+  }
 }
 
 export function directionFromGrab(grabOp) {

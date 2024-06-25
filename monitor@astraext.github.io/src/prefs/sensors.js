@@ -130,13 +130,14 @@ export default class Sensors {
                 choicesSource.push({ value: source.value, text: source.text });
             return choicesSource;
         };
+        const sources = generateSensorSources();
         const sensor1Section = PrefsUtils.addExpanderRow({ title: _('Sensor 1') }, group, 'sensors');
         PrefsUtils.addSwitchRow({ title: _('Show'), tabs: 1 }, 'sensors-header-sensor1-show', sensor1Section);
         PrefsUtils.addDropRow({
             title: _('Source'),
             tabs: 1,
             useMarkup: true,
-        }, generateSensorSources, 'sensors-header-sensor1', sensor1Section, 'json');
+        }, sources, 'sensors-header-sensor1', sensor1Section, 'json');
         PrefsUtils.addSpinRow({
             title: _('Value Digits'),
             subtitle: _('Set -1 to auto. Number of digits after the decimal point.'),
@@ -153,7 +154,7 @@ export default class Sensors {
             title: _('Source'),
             tabs: 1,
             useMarkup: true,
-        }, generateSensorSources, 'sensors-header-sensor2', sensor2Section, 'json');
+        }, sources, 'sensors-header-sensor2', sensor2Section, 'json');
         PrefsUtils.addSpinRow({
             title: _('Value Digits'),
             subtitle: _('Set -1 to auto. Number of digits after the decimal point.'),
@@ -167,7 +168,7 @@ export default class Sensors {
             title: _('Source'),
             tabs: 1,
             useMarkup: true,
-        }, generateSensorSources, 'sensors-header-tooltip-sensor1', tooltipSensor1Section, 'json', '""');
+        }, sources, 'sensors-header-tooltip-sensor1', tooltipSensor1Section, 'json', '""');
         PrefsUtils.addTextInputRow({
             title: _('Short Name'),
             subtitle: _('Short name to display in the tooltip.'),
@@ -183,7 +184,7 @@ export default class Sensors {
             title: _('Source'),
             tabs: 1,
             useMarkup: true,
-        }, generateSensorSources, 'sensors-header-tooltip-sensor2', tooltipSensor2Section, 'json', '""');
+        }, sources, 'sensors-header-tooltip-sensor2', tooltipSensor2Section, 'json', '""');
         PrefsUtils.addTextInputRow({
             title: _('Short Name'),
             subtitle: _('Short name to display in the tooltip.'),
@@ -199,7 +200,7 @@ export default class Sensors {
             title: _('Source'),
             tabs: 1,
             useMarkup: true,
-        }, generateSensorSources, 'sensors-header-tooltip-sensor3', tooltipSensor3Section, 'json', '""');
+        }, sources, 'sensors-header-tooltip-sensor3', tooltipSensor3Section, 'json', '""');
         PrefsUtils.addTextInputRow({
             title: _('Short Name'),
             subtitle: _('Short name to display in the tooltip.'),
@@ -215,7 +216,7 @@ export default class Sensors {
             title: _('Source'),
             tabs: 1,
             useMarkup: true,
-        }, generateSensorSources, 'sensors-header-tooltip-sensor4', tooltipSensor4Section, 'json', '""');
+        }, sources, 'sensors-header-tooltip-sensor4', tooltipSensor4Section, 'json', '""');
         PrefsUtils.addTextInputRow({
             title: _('Short Name'),
             subtitle: _('Short name to display in the tooltip.'),
@@ -231,7 +232,7 @@ export default class Sensors {
             title: _('Source'),
             tabs: 1,
             useMarkup: true,
-        }, generateSensorSources, 'sensors-header-tooltip-sensor5', tooltipSensor5Section, 'json', '""');
+        }, sources, 'sensors-header-tooltip-sensor5', tooltipSensor5Section, 'json', '""');
         PrefsUtils.addTextInputRow({
             title: _('Short Name'),
             subtitle: _('Short name to display in the tooltip.'),

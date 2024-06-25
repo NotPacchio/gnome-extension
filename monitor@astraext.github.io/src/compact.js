@@ -24,7 +24,6 @@ import Clutter from 'gi://Clutter';
 import Header from './header.js';
 import Config from './config.js';
 import Utils from './utils/utils.js';
-import ProfilesMenu from './profiles/profilesMenu.js';
 export default GObject.registerClass(class CompactHeader extends Header {
     constructor() {
         super('Compact Header');
@@ -37,7 +36,23 @@ export default GObject.registerClass(class CompactHeader extends Header {
         this.activation = Config.get_string('compact-mode-activation') ?? 'both';
         this.compacted = Config.get_boolean('compact-mode');
         this.buildIcon();
-        Config.connect(this, 'changed::compact-mode', this.refresh.bind(this));
+        Config.connect(this, 'changed::compact-mode', () => {
+            this.compacted = Config.get_boolean('compact-mode');
+            if (Config.get_boolean('compact-mode-start-expanded'))
+                this.compacted = false;
+            this.refreshIcon();
+            Utils.lowPriorityTask(() => {
+                this.compactCallback?.(this.compacted);
+            }, GLib.PRIORITY_DEFAULT_IDLE);
+        });
+        this.connect('button-press-event', (_widget, _event) => {
+            this.click();
+            return Clutter.EVENT_PROPAGATE;
+        });
+        this.connect('touch-event', (_widget, _event) => {
+            this.click();
+            return Clutter.EVENT_PROPAGATE;
+        });
         this.connect('enter-event', this.start_hover.bind(this));
         this.connect('leave-event', this.end_hover.bind(this));
         Config.connect(this, 'changed::compact-mode-activation', () => {
@@ -51,16 +66,6 @@ export default GObject.registerClass(class CompactHeader extends Header {
         });
         Config.connect(this, 'changed::compact-mode-compact-icon-custom', this.refreshIcon.bind(this));
         Config.connect(this, 'changed::compact-mode-expanded-icon-custom', this.refreshIcon.bind(this));
-        Config.addSyncListener(this, this.refresh.bind(this));
-    }
-    refresh() {
-        this.compacted =
-            Config.get_boolean('compact-mode') &&
-                !Config.get_boolean('compact-mode-start-expanded');
-        this.refreshIcon();
-        Utils.lowPriorityTask(() => {
-            this.compactCallback?.(this.compacted);
-        }, GLib.PRIORITY_DEFAULT_IDLE);
     }
     click() {
         if (this.activation === 'hover')
@@ -70,10 +75,6 @@ export default GObject.registerClass(class CompactHeader extends Header {
         Utils.lowPriorityTask(() => {
             this.compactCallback?.(this.compacted);
         }, GLib.PRIORITY_DEFAULT_IDLE);
-    }
-    clickAlt() {
-        const profilesMenu = new ProfilesMenu(this, 0.5);
-        profilesMenu.open(true);
     }
     start_hover() {
         if (this.activation === 'click')
@@ -92,6 +93,15 @@ export default GObject.registerClass(class CompactHeader extends Header {
             return;
         this.hovering = false;
         if (this.compacted) {
+            Utils.lowPriorityTask(() => {
+                this.compactCallback?.(this.compacted);
+            }, GLib.PRIORITY_DEFAULT_IDLE);
+        }
+    }
+    startup() {
+        if (Config.get_boolean('compact-mode-start-expanded')) {
+            this.compacted = false;
+            this.refreshIcon();
             Utils.lowPriorityTask(() => {
                 this.compactCallback?.(this.compacted);
             }, GLib.PRIORITY_DEFAULT_IDLE);

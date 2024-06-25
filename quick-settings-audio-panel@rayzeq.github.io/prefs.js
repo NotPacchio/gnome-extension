@@ -1,5 +1,6 @@
 "use strict";
 
+import GLib from 'gi://GLib';
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
 import Gdk from 'gi://Gdk';
@@ -49,11 +50,22 @@ export default class QSAPPreferences extends ExtensionPreferences {
         if (settings.get_strv('ordering').length != 5) {
             settings.set_strv('ordering', ['volume-output', 'sink-mixer', 'volume-input', 'media', 'mixer']);
         }
+
+        let subtitle = _("Thoses sliders are the same you can find in pavucontrol or in the sound settings");
+        try {
+            GLib.spawn_command_line_sync('pactl');
+        } catch (e) {
+            if (e.message.includes("No such file"))
+                subtitle += "\n" + _("<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>");
+            else {
+                subtitle += "\n" + _(`<span color=\"red\" weight=\"bold\">Cannot check for availability of <tt>pactl</tt>: <tt>${e.message}</tt></span>`);
+            }
+        }
         main_group.add(create_switch(
             settings, 'create-mixer-sliders',
             {
                 title: _("Create applications mixer"),
-                subtitle: _("Thoses sliders are the same you can find in pavucontrol or in the sound settings")
+                subtitle: subtitle
             }
         ));
         main_group.add(create_switch(
@@ -218,6 +230,16 @@ export default class QSAPPreferences extends ExtensionPreferences {
         });
         page.add(libpanel_group);
 
+        libpanel_group.add(create_dropdown(
+            libpanel_settings, 'alignment',
+            {
+                title: _("Panel alignment"),
+                fields: [
+                    ['left', _("Left")],
+                    ['right', _("Right")],
+                ]
+            }
+        ));
         libpanel_group.add(create_switch_spin(
             libpanel_settings, 'padding-enabled', 'padding',
             {

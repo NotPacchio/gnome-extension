@@ -75,6 +75,19 @@ export class SettingsPage extends PreferencesPage {
     });
 
     this.add_group({
+      title: _("Behavior"),
+      children: [
+        new SwitchRow({
+          title: _("Move Pointer with the Focus"),
+          subtitle: _("Move the pointer when focusing or swapping via keyboard"),
+          experimental: true,
+          settings,
+          bind: "move-pointer-focus-enabled",
+        }),
+      ],
+    });
+
+    this.add_group({
       title: _("Tiling"),
       children: [
         new SwitchRow({
@@ -107,6 +120,12 @@ export class SettingsPage extends PreferencesPage {
           ],
         }),
         new SwitchRow({
+          title: _("Auto Exit Tabbed Tiling Mode"),
+          subtitle: _("Exit tabbed tiling mode when only a single tab remains"),
+          settings,
+          bind: "auto-exit-tabbed",
+        }),
+        new SwitchRow({
           title: _("Auto Split"),
           subtitle: _("Quarter Tiling"),
           experimental: true,
@@ -126,19 +145,6 @@ export class SettingsPage extends PreferencesPage {
           experimental: true,
           settings,
           bind: "quick-settings-enabled",
-        }),
-      ],
-    });
-
-    this.add_group({
-      title: _("Behavior"),
-      children: [
-        new SwitchRow({
-          title: _("Move Pointer with the Focus"),
-          subtitle: _("Move the pointer when focusing or swapping via keyboard"),
-          experimental: true,
-          settings,
-          bind: "move-pointer-focus-enabled",
         }),
       ],
     });

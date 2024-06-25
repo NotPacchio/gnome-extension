@@ -17,6 +17,7 @@
  */
 
 // Gnome imports
+import Clutter from "gi://Clutter";
 import GObject from "gi://GObject";
 import Meta from "gi://Meta";
 import Shell from "gi://Shell";
@@ -490,11 +491,22 @@ export class Node extends GObject.Object {
       metaWin.activate(global.display.get_current_time());
     };
 
-    iconBin.connect("clicked", clickFn);
-    titleButton.connect("clicked", clickFn);
-    closeButton.connect("clicked", () => {
+    let closeFn = () => {
       metaWin.delete(global.get_current_time());
-    });
+    };
+
+    let middleClickCloseFn = (_, event) => {
+      if (event.get_button() === Clutter.BUTTON_MIDDLE) {
+        metaWin.delete(global.get_current_time());
+      }
+    };
+
+    iconBin.connect("clicked", clickFn);
+    iconBin.connect("button-release-event", middleClickCloseFn);
+    titleButton.connect("clicked", clickFn);
+    titleButton.connect("button-release-event", middleClickCloseFn);
+    closeButton.connect("clicked", closeFn);
+    closeButton.connect("button-release-event", middleClickCloseFn);
 
     if (metaWin === global.display.get_focus_window()) {
       tabContents.add_style_class_name("window-tabbed-tab-active");
@@ -634,7 +646,7 @@ export class Tree extends Node {
       let monitorWsNode = this.createNode(
         `ws${wsIndex}`,
         NODE_TYPES.MONITOR,
-        `mo${mi}ws${wsIndex}`
+        `mo${mi}ws${wsIndex}`,
       );
       monitorWsNode.layout = this.extWm.determineSplitLayout();
       monitorWsNode.actorBin = new St.Bin();
@@ -712,7 +724,7 @@ export class Tree extends Node {
         const grandParentNode = parentNode.parentNode;
         grandParentNode.insertBefore(child, parentNode.nextSibling);
         Logger.debug(
-          `Parent is a window, attaching to this window's parent ${grandParentNode.nodeType}`
+          `Parent is a window, attaching to this window's parent ${grandParentNode.nodeType}`,
         );
       } else {
         // Append as the last item of the container
@@ -1025,7 +1037,7 @@ export class Tree extends Node {
     let targetMonitor = -1;
     targetMonitor = global.display.get_monitor_neighbor_index(
       nodeWindow.nodeValue.get_monitor(),
-      monitorDirection
+      monitorDirection,
     );
     if (targetMonitor < 0) return targetMonitor;
     let monWs = `mo${targetMonitor}ws${nodeWindow.nodeValue.get_workspace().index()}`;
@@ -1215,6 +1227,18 @@ export class Tree extends Node {
       if (!this.extWm.floatingWindow(node)) cleanUpParent(existParent);
     }
 
+    // If only a single tab remains, exit tabbed layout
+    if (
+      this.settings.get_boolean("auto-exit-tabbed") &&
+      parentNode.nodeType === NODE_TYPES.CON &&
+      parentNode.layout === LAYOUT_TYPES.TABBED &&
+      parentNode.childNodes.length === 1
+    ) {
+      parentNode.layout = this.extWm.determineSplitLayout();
+      this.resetSiblingPercent(parentNode);
+      parentNode.lastTabFocus = null;
+    }
+
     if (node === this.attachNode) {
       this.attachNode = null;
     } else {
@@ -1281,7 +1305,7 @@ export class Tree extends Node {
     // [con[con[con[con[window]]]]] --> [con[window]]
     // TODO: help :)
     const grandParentCons = this.getNodeByType(NODE_TYPES.CON).filter(
-      (c) => c.childNodes.length === 1 && c.childNodes[0].nodeType === NODE_TYPES.CON
+      (c) => c.childNodes.length === 1 && c.childNodes[0].nodeType === NODE_TYPES.CON,
     );
 
     grandParentCons.forEach((c) => {
@@ -1511,7 +1535,6 @@ export class Tree extends Node {
 
           if (gap === 0) {
             adjustY = renderRect.y;
-            nodeY = renderRect.y + params.stackedHeight + adjust / 4;
           }
 
           let decoration = node.decoration;
@@ -1628,7 +1651,7 @@ export class Tree extends Node {
     Logger.debug(
       `${spacing}${rootSpacing}${dashes} ${node.nodeType}#${
         node.index !== null ? node.index : "-"
-      } @${attributes}`
+      } @${attributes}`,
     );
   }
 

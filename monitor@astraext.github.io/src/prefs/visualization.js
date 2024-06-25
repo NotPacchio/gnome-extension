@@ -38,7 +38,7 @@ export default class Visualization {
     setupVisualization(_prefs) {
         this.visualization = new Adw.NavigationPage({
             title: _('Visualization'),
-            tag: 'visualization',
+            tag: 'general',
         });
         const toolbar = new Adw.ToolbarView();
         const header = new Adw.HeaderBar();

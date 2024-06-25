@@ -23,7 +23,6 @@ import Gio from 'gi://Gio';
 import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import PrefsUtils from './prefsUtils.js';
 import Utils from '../utils/utils.js';
-import Config from '../config.js';
 export default class Utility {
     constructor(prefs, window) {
         this.setupUtility(prefs, window);
@@ -31,7 +30,7 @@ export default class Utility {
     get page() {
         return this.utility;
     }
-    setupUtility(_prefs, window) {
+    setupUtility(prefs, window) {
         this.utility = new Adw.NavigationPage({
             title: _('Utility'),
             tag: 'utility',
@@ -40,20 +39,17 @@ export default class Utility {
         const header = new Adw.HeaderBar();
         header.showTitle = true;
         toolbar.add_top_bar(header);
-        const utilityPage = this.getUtilityPage(window);
+        const utilityPage = this.getUtilityPage(prefs, window);
         toolbar.set_content(utilityPage);
         this.utility.set_child(toolbar);
     }
-    getUtilityPage(window) {
+    getUtilityPage(prefs, window) {
         const utilityPage = new Adw.PreferencesPage({
             title: _('Utility'),
             iconName: 'am-settings-symbolic',
         });
         const group = new Adw.PreferencesGroup({ title: _('Utility') });
-        PrefsUtils.addButtonRow({
-            title: _('Export Settings'),
-            subtitle: _('Warning: this will export all profiles.'),
-        }, group, () => {
+        PrefsUtils.addButtonRow({ title: _('Export Settings') }, group, () => {
             const dialog = new Gtk.FileChooserDialog({
                 title: _('Export Settings'),
                 action: Gtk.FileChooserAction.SAVE,
@@ -74,7 +70,7 @@ export default class Utility {
                     const path = subject.get_file().get_path();
                     const file = Gio.file_new_for_path(path);
                     const stream = file.replace(null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
-                    const settings = Config.exportSettings();
+                    const settings = prefs.exportSettings();
                     const data = new TextEncoder().encode(settings);
                     stream.write_all(data, null);
                     stream.close(null);
@@ -82,10 +78,7 @@ export default class Utility {
                 subject.destroy();
             });
         });
-        PrefsUtils.addButtonRow({
-            title: _('Import Settings'),
-            subtitle: _('Warning: this will overwrite all profiles.'),
-        }, group, () => {
+        PrefsUtils.addButtonRow({ title: _('Import Settings') }, group, () => {
             const dialog = new Gtk.FileChooserDialog({
                 title: _('Import Settings'),
                 action: Gtk.FileChooserAction.OPEN,
@@ -106,7 +99,8 @@ export default class Utility {
                         const path = subject.get_file().get_path();
                         Utils.readFileAsync(path)
                             .then(data => {
-                            Config.importSettings(data);
+                            prefs.importSettings(data);
+                            window.close();
                         })
                             .catch(e => {
                             Utils.error(e.message);
@@ -119,10 +113,7 @@ export default class Utility {
                 subject.destroy();
             });
         });
-        PrefsUtils.addButtonRow({
-            title: _('Reset Settings'),
-            subtitle: _('Warning: this will reset all profiles.'),
-        }, group, () => {
+        PrefsUtils.addButtonRow({ title: _('Reset Settings') }, group, () => {
             const dialog = new Gtk.MessageDialog({
                 title: _('Reset Settings'),
                 text: _('Are you sure you want to reset all preferences?'),
@@ -133,7 +124,8 @@ export default class Utility {
             });
             dialog.connect('response', (_dialog, response) => {
                 if (response === Gtk.ResponseType.YES) {
-                    Config.resetSettings();
+                    prefs.resetSettings();
+                    window.close();
                 }
                 dialog.close();
             });

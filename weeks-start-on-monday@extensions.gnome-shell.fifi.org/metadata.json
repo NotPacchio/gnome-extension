@@ -6,10 +6,11 @@
   "settings-schema": "org.gnome.shell.extensions.weeks-start-on-monday",
   "shell-version": [
     "45",
-    "46"
+    "46",
+    "47"
   ],
   "url": "https://github.com/F-i-f/weeks-start-on-monday",
   "uuid": "weeks-start-on-monday@extensions.gnome-shell.fifi.org",
-  "vcs_revision": "v17-0-gca1bade",
-  "version": 17
+  "vcs_revision": "v18-0-ga5cd9cc",
+  "version": 18
 }
